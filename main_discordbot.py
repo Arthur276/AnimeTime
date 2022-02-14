@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-import mod_anime.py as anipy
+import mod_anime as anipy
 
 bot = commands.Bot(command_prefix = "!", description = "AnimeTime discord bot, devloped by Arthur")
 main_channel = "942152881996443708"
