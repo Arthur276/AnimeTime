@@ -5,7 +5,7 @@ import csv
 import os
 import main_anime as anipy
 from main_anime import Anime
-bot = commands.Bot(command_prefix = "a!", description = "AnimeTime discord bot, devloped by Arthur")
+bot = commands.Bot(command_prefix = "a!", description = "AnimeTime discord bot, developed by Arthur")
 
 @bot.event
 async def on_ready():
@@ -40,13 +40,20 @@ async def afficher_episodes(ctx):
         if number_selec in dict_number.keys():
             id = Anime.instances_anime[dict_number[number_selec]]
             await ctx.send(id.nom_complet)
+            message_discord = ""
             for saison in range(1,id.number_seasons+1):
                 for episode in range(1,id.number_episodes+1):
                     key = f"S{saison}:E{episode}"
                     if key in id.dict_saisons.keys():
                         episode_trouve = id.dict_saisons[key]
                         if episode_trouve != "":
-                            await ctx.send(f"Saison {saison}, Episode {episode} : {episode_trouve}")
+                            message_episode = (f"Saison {saison}, Episode {episode} : {episode_trouve} \n")
+                            if len(message_discord) + len(message_episode) >= 1650:
+                                await ctx.send(message_discord)
+                                message_discord = message_episode
+                            else:
+                                message_discord += message_episode
+            await ctx.send(message_discord)
 
 @bot.command()
 async def enregistrer(ctx):

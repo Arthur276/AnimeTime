@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 
 class Anime():
     instances_anime = {}
+    next_instance = 0
 
     def __new__(cls, nom_complet):
         instances = cls.instances_anime
@@ -24,6 +25,14 @@ class Anime():
             self.dict_saisons = {}
         else:
             self.actif = False
+
+    @classmethod
+    def ajouter_anime(cls,nom_anime):
+        globals()[f"Anime_{Anime.next_instance}"] = Anime(nom_anime)
+        Anime.next_instance += 1
+
+
+
 
     def checking(self):
             if self.nom_complet in Anime.instances_anime.keys() and self.actif:
@@ -73,10 +82,19 @@ de la saison {saison}, de {self.nom_complet} ? ")
                 results = soup.find(title = f"Épisode {episode}")
                 self.dict_saisons[f"S1:E{episode}"] = results.string
 
-def afficher_anime():
-    print("Voici les animés ajoutés : ")
-    for instance in Anime.instances_anime.values():
-        print(instance.nom_complet)
+    def afficher_episodes(self):
+        if self.checking():
+            for saison in range(0,self.number_seasons+1):
+                for episode in range(0,self.number_episodes+1):
+                    titre_episode = self.dict_saisons.get(f"S{saison}:E{episode}")
+                    if str(type(titre_episode)) == "<class 'str'>":
+                        print(f"Saison {saison} ; Épisode {episode} : {titre_episode}")
+
+    @classmethod
+    def afficher_anime(cls):
+        print("Voici les animés ajoutés : ")
+        for instance in Anime.instances_anime.values():
+            print(instance.nom_complet)
 
 
 def sauv_anime():
@@ -91,27 +109,6 @@ def sauv_anime():
             writer.writerow(ligne)
     print("Les animés ont été enregistrés dans le fichier 'anime.csv'.")
 
-def recup_data():
-    print("Les animés ainsi que leurs noms d'épisodes vont être récupérés s'ils sont présents dans le fichier 'anime.csv'.")
-    print("Les fichier contenant les noms des épisodes des animés vont être supprimés !")
-    print("Récupération des données en cours...")
-    with open("anime.csv", "r", encoding ="utf-8") as main_csv:
-        reader = csv.DictReader(main_csv, delimiter=',')
-        for ligne in reader:
-            instance_number = 0
-            globals()[f"instance{instance_number}"] = Anime(ligne["anime"])
-            globals()[f"instance{instance_number}"].number_seasons = int(ligne["saisons"])
-            globals()[f"instance{instance_number}"].number_episodes = int(ligne["episodes"])
-            instance_number += 1
-    for anime_to_read in Anime.instances_anime.keys():
-        id_anime = Anime.instances_anime[anime_to_read]
-        with open(f"{anime_to_read}.csv", encoding ="utf-8") as anime_csv:
-            reader = csv.DictReader(anime_csv, delimiter='|')
-            for ligne in reader:
-                id_anime.dict_saisons[ligne["episode"]] = ligne["nom_episode"]
-        os.remove(f"{anime_to_read}.csv")
-        print(f"Les noms des épisodes de {anime_to_read} ont été récupérés.")
-
 def sauv_episodes():
     print("Enregistrement des noms d'épisodes des animés présents dans le fichier 'animé.csv'...")
     for anime_to_save in Anime.instances_anime.keys():
@@ -124,3 +121,45 @@ def sauv_episodes():
                 ligne =  [episode,id_anime.dict_saisons[episode]]
                 writer.writerow(ligne)
         print(f"Les noms des épisodes de {anime_to_save} ont été enregistrés dans {anime_to_save}.csv .")
+
+def sauv_data():
+    clean_data()
+    print("Enregistrement de toutes les données (Animés et Épisodes)...")
+    sauv_anime()
+    sauv_episodes()
+    print("Toutes les données ont été correctement enregistrées.")
+
+def recup_data():
+    print("Les animés vont être récupérés s'ils sont présents dans le fichier 'anime.csv'.")
+    print("Récupération des données en cours...")
+    try:
+        with open("anime.csv", "r", encoding ="utf-8") as main_csv:
+            reader = csv.DictReader(main_csv, delimiter=',')
+            next_instance = 0
+            for ligne in reader:
+                globals()[f"Anime_{Anime.next_instance}"] = Anime(ligne["anime"])
+                globals()[f"Anime_{Anime.next_instance}"].number_seasons = int(ligne["saisons"])
+                globals()[f"Anime_{Anime.next_instance}"].number_episodes = int(ligne["episodes"])
+                Anime.next_instance += 1
+        print("Les noms des épisodes des animés présents dans le fichier 'anime.csv' vont être récupérés")
+        for anime_to_read in Anime.instances_anime.keys():
+            id_anime = Anime.instances_anime[anime_to_read]
+            with open(f"{anime_to_read}.csv", encoding ="utf-8") as anime_csv:
+                reader = csv.DictReader(anime_csv, delimiter='|')
+                for ligne in reader:
+                    id_anime.dict_saisons[ligne["episode"]] = ligne["nom_episode"]
+            print(f"Les noms des épisodes de {anime_to_read} ont été récupérés.")
+    except FileNotFoundError:
+        print("Aucune donnée n'est enregistrée !")
+
+
+def clean_data():
+    try:
+        print("Suppression de toutes les données enregistrées...")
+        for anime_to_delete in Anime.instances_anime.keys():
+            id_anime = Anime.instances_anime[anime_to_delete]
+            os.remove(f"{anime_to_delete}.csv")
+        os.remove("anime.csv")
+        print("Les données ont été correctement supprimées.")
+    except FileNotFoundError:
+        print("Il n'y a aucune donnée à supprimer !")
