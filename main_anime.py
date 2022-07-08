@@ -146,6 +146,8 @@ def sauv_data():
     print("Toutes les données ont été correctement enregistrées.")
 
 def recup_data():
+    print("ATTENTION : La récupération des données provoque la suppression de toutes les données non enregistrées")
+    clean_data()
     print("Les animés vont être récupérés s'ils sont présents dans le fichier 'anime.csv'.")
     print("Récupération des données en cours...")
     try:
@@ -161,7 +163,11 @@ def recup_data():
             with open(f"{anime_to_read}.csv", encoding ="utf-8") as anime_csv:
                 reader = csv.DictReader(anime_csv, delimiter='|')
                 for ligne in reader :
-                    
+                        id_saison = Saison()
+                        print(f"Ajout à la saison {ligne["saison"]} dejà existante")
+                        if f"E{ligne["episode"]}" in id_saison.dict_episodes.keys():
+
+
 
     except FileNotFoundError:
         print("Aucune donnée n'est enregistrée !")
