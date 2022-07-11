@@ -7,6 +7,9 @@ import main_anime as anipy
 from main_anime import Anime
 bot = commands.Bot(command_prefix = "a!", description = "AnimeTime discord bot, developed by Arthur")
 
+discord_file_version = "DV0.1"
+print("Version du fichier du bot discord :" + discord_file_version)
+
 @bot.event
 async def on_ready():
         anipy.recup_data()
@@ -63,6 +66,18 @@ async def enregistrer(ctx):
         anipy.sauv_episodes()
         await ctx.send("Les animés et leurs données ont été enregistrés")
 
+@bot.command()
+async def print_episodes_SNK(ctx):
+        episodes_snk = Anime.instances_anime["SNK"].afficher_episodes()
+        message_discord = ""
+        for episode in episodes_snk.keys():
+            message_episode = episode + ":" + episodes_snk[episode]
+            if len(message_discord) + len(message_episode) >= 1650:
+                await ctx.send(message_discord)
+                message_discord = message_episode
+            else:
+                message_discord += message_episode + "\n"
+        await ctx.send(message_discord)
 
 
-bot.run("OTE2Njc0NzAwNDA1NTM4ODY4.Yatl1w.AEXrtRr9kVyyMFoeYHZcfr_tD_I")
+bot.run("OTE2Njc0NzAwNDA1NTM4ODY4.GpV3qh.IfB0sPqy2W63muauHzXbN5tt78V3zpoQmOD86E")

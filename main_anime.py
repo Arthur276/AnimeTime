@@ -3,6 +3,8 @@ import os
 import requests
 from bs4 import BeautifulSoup
 
+file_version = "V0.1"
+
 class Episode():
     # classe des épisodes d'une saison d'un animé
     def __init__(self,anime_id,saison_id,numero_episode,nom_episode):
@@ -239,3 +241,5 @@ def clean_data(type = "file"):
             print("Les données de la mémoire ont été supprimées")
     except FileNotFoundError:
         print("Il n'y a aucune donnée à supprimer !")
+
+print("Version du fichier de script :" + file_version)
