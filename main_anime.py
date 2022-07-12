@@ -3,56 +3,55 @@ import os
 import requests
 from bs4 import BeautifulSoup
 
-file_version = "V0.1"
+file_version = "V1.0"
+print("Version du fichier de script :" + file_version)
 
 class Episode():
-    # classe des épisodes d'une saison d'un animé
-    def __init__(self,anime_id,saison_id,numero_episode,nom_episode):
-        self.anime = anime_id
-        self.saison = saison_id
+    def __init__(self,anime_id_memory,saison_id_memory,numero_episode,nom_episode):
+        self.anime_id_memory = anime_id_memory
+        self.saison_id_memory = saison_id_memory
         self.numero_episode = numero_episode
-        saison_id.dict_episodes[numero_episode] = self
+        saison_id_memory.dict_episodes[numero_episode] = self
         self.nom_episode = nom_episode
 
 
 class Saison():
-    #classe des saison d'un animé, qui peut contenir des épisodes
-    def __init__(self,anime_id, numero_saison, nb_episodes,init = True):
+    def __init__(self,anime_id_memory, numero_saison, nb_episodes,init = True):
         try :
-            self.anime = anime_id
+            self.anime_id_memory = anime_id_memory
             self.nb_episodes = nb_episodes
-            self.saison = numero_saison
+            self.numero_saison = numero_saison
             self.dict_episodes = {}
-            anime_id.dict_saisons[numero_saison] = self
-            anime_id.nb_saisons += 1
-            anime_id.nb_episodes += nb_episodes
+            anime_id_memory.dict_saisons[numero_saison] = self
+            anime_id_memory.nb_saisons += 1
+            anime_id_memory.nb_episodes += nb_episodes
             if init:
                 self.init_episodes()
-            print(f"La saison {numero_saison} de {anime_id.nom_complet} a été ajouté")
-
+            print(f"La saison {numero_saison} de {anime_id_memory.nom_complet} a été ajouté")
         except ValueError:
             print("Le numéro de la saison doit être un entier !")
 
     def init_episodes(self):
-        #fonction qui crée automatiquement des épisodes avec comme nom par défaut "Episode XX"
         # STATUS : OK
+        """Crée les épisodes d'une saison au format 'Episode XX'"""
         for episode in range(1,self.nb_episodes+1):
-            globals()[f"episode_{self.anime.id}_{self.saison}_{episode}"] = Episode(self.anime,self,episode,f"Episode {episode}")
+            globals()[f"episode_{self.anime_id_memory.id_local}_{self.numero_saison}_{episode}"] = Episode(self.anime_id_memory,self,episode,f"Episode {episode}")
 
-    def nom_episode(self,numero_episode,nom):
+    def edit_nom_episode(self,numero_episode,nom):
         # STATUS : OK
+        """Renomme un épisode"""
         self.dict_episodes[f"E{numero_episode}"].nom_episode = nom
-        globals()[f"episode_{self.anime.id}_{self.saison}_{numero_episode}"].nom_episode = nom
+        globals()[f"episode_{self.anime.id_local}_{self.numero_saison}_{numero_episode}"].nom_episode = nom
 
     def afficher_episodes_saison(self):
         # STATUS : OK
+        """Affiche les episode d'une saison"""
         list_episodes_saison = {}
         for episode in self.dict_episodes.keys():
             list_episodes_saison[episode] = self.dict_episodes[episode]
 
 
 class Anime():
-    #classe des animés, qui peuvent contenir des saisons et des épisodes
     instances_anime = {}
     nb_anime = 0
 
@@ -71,18 +70,20 @@ class Anime():
         self.nb_episodes = 0
         self.episodes_par_saison = {}
         self.dict_saisons = {}
-        self.id = Anime.nb_anime
+        self.id_local = Anime.nb_anime
         Anime.nb_anime += 1
 
 
     @classmethod
     def ajouter_anime(cls,nom_anime):
         # STATUS : OK
-        globals()[f"anime_{Anime.nb_anime}"] = Anime(nom_anime)
+        """Ajoute un animé"""
+        print(Anime.nb_anime)
+        globals()[f"anime_{Anime.nb_anime-1}"] = Anime(nom_anime)
 
     def supprimer_anime(self):
         # STATUS : OK
-        print(f"Suppresion de l'animé {self.nom_complet}")
+        """Supprime un animé"""
         del Anime.instances_anime[self.nom_complet]
         Anime.nb_anime -= 1
         print(f"L'animé {self.nom_complet} à été supprimé")
@@ -90,6 +91,7 @@ class Anime():
     @classmethod
     def afficher_anime(cls):
         # STATUS : OK
+        """Retourne une liste contenant les nom des animés chargés"""
         list_anime = []
         print("Voici les animés ajoutés : ")
         for instance in Anime.instances_anime.values():
@@ -99,17 +101,20 @@ class Anime():
 
     def ajouter_saison(self,numero_saison,nb_episodes,init = True):
         # STATUS : OK
-        globals()[f"saison_{self.id}_{numero_saison}"] = Saison(self,numero_saison,nb_episodes)
+        """Ajoute une saison a un animé"""
+        globals()[f"saison_{self.id_local}_{numero_saison}"] = Saison(self,numero_saison,nb_episodes)
 
-    def supprimer_saison(self,nom_saison):
+    def supprimer_saison(self,numero_saison):
         # STATUS : OK
+        """Supprime une saison d'un animé"""
         self.nb_saisons -= 1
-        self.nb_episodes -= self.dict_saisons[nom_saison].nb_episodes
-        del self.dict_saisons[nom_saison]
-        print("La saison et ses épisodes ont été supprimés")
+        self.nb_episodes -= self.dict_saisons[str(numero_saison)].nb_episodes
+        del self.dict_saisons[str(numero_saison)]
+        print(f"La saison {numero_saison} de l'anime {self.nom_complet} et ses épisodes ont été supprimés")
 
     def afficher_saisons(self):
         # STATUS : OK
+        """Retourne un dictionnaire contenant les saisons d'un animé"""
         affich_saisons = {}
         for saison in self.dict_saisons.keys():
             affich_saisons[saison] = self.dict_saisons[saison].nb_episodes
@@ -117,22 +122,24 @@ class Anime():
 
     def webscrapp_episodes(self):
         # STATUS : BETA
+        """Récupère les informations à propos des épisodes et/ou des animés puis enregistre les informations"""
         print("Cette fonction ne fonctionne qu'avec l'animé SNK")
         print("ATTENTION : Fonctions obsolète qui ne fonctionne pas avec le reste des commandes")
         url = "https://attaque-des-titans.fandom.com/fr/wiki/Liste_des_%C3%89pisodes"
         if self.nom_complet == "SNK" :
             page = requests.get(url)
             soup = BeautifulSoup(page.content, 'html.parser')
-            globals()[f"saison_{self.id}_1"] = Saison(self,1,87)
+            globals()[f"saison_{self.id_local}_1"] = Saison(self,1,87)
             id_saison = self.dict_saisons[1]
             for episode in range(1,87+1):
                 resultats = soup.find(title = f"Épisode {episode}")
-                globals()[f"episode_{self.id}_1_{episode}"] = Episode(self,id_saison,episode,resultats.string)
+                globals()[f"episode_{self.id_local}_1_{episode}"] = Episode(self,id_saison,episode,resultats.string)
                 print(resultats.string)
             print(f"Webscrapping effectué depuis {url}")
 
     def afficher_episodes(self):
         #STATUS : OK
+        """Retourne un dictionnaire contenant les noms d'épisode aux numéro d'épisodes associés"""
         affich_episode = {}
         for saison in self.dict_saisons.keys():
             id_saison = self.dict_saisons[saison]
@@ -145,19 +152,21 @@ class Anime():
 
 def sauv_anime():
     #STATUS : OK
+    """Enregistre les animés dans le fichier anime.csv"""
     print("Enregistrement des animés en cours...")
     header = ["anime","saisons","episodes"]
     with open("anime.csv", "w", newline='', encoding ="utf-8") as main_csv:
         writer = csv.writer(main_csv, delimiter=',')
         writer.writerow(header)
-        for anime in Anime.instances_anime.keys():
-            id = Anime.instances_anime[anime]
-            ligne = [id.nom_complet, id.nb_saisons, id.nb_episodes]
+        for anime_to_save in Anime.instances_anime.keys():
+            id_anime_to_save = Anime.instances_anime[anime_to_save]
+            ligne = [id_anime_to_save.nom_complet, id_anime_to_save.nb_saisons, id_anime_to_save.nb_episodes]
             writer.writerow(ligne)
     print("Les animés ont été enregistrés dans le fichier 'anime.csv'.")
 
 def sauv_episodes():
     #STATUS : OK
+    """Enregistre les episodes des animés présents dans le fichier anime.csv dans un fichier 'nom_anime'"""
     print("Enregistrement des noms d'épisodes des animés...")
     for anime_to_save in Anime.instances_anime.keys():
         id_anime = Anime.instances_anime[anime_to_save]
@@ -184,6 +193,7 @@ def sauv_episodes():
 
 def sauv_data():
     #STATUS : OK
+    """Combine les deux fonctions de sauvegarde"""
     print("Enregistrement de toutes les données (Animés et Épisodes)...")
     sauv_anime()
     sauv_episodes()
@@ -191,16 +201,14 @@ def sauv_data():
 
 def recup_data():
     #STATUS : OK
-    print("ATTENTION : La récupération des données provoque la suppression de toutes les données non enregistrées")
+    """Récupère les données des animés dans le fichier anime.csv s'il est présent, puis récupère les fichiers par animé pour obtenir les épisodes"""
     print("Les animés vont être récupérés s'ils sont présents dans le fichier 'anime.csv'.")
     print("Récupération des données en cours...")
     try:
         with open("anime.csv", "r", encoding ="utf-8") as main_csv:
             reader = csv.DictReader(main_csv, delimiter=',')
             for ligne in reader:
-                globals()[f"anime_{Anime.nb_anime}"] = Anime(ligne["anime"])
-                globals()[f"anime_{Anime.nb_anime}"].nb_saisons = int(ligne["saisons"])
-                globals()[f"anime_{Anime.nb_anime}"].nb_episodes = int(ligne["episodes"])
+                Anime.ajouter_anime(ligne["anime"])
         print("Les noms des épisodes des animés présents dans le fichier 'anime.csv' vont être récupérés")
         for anime_to_read in Anime.instances_anime.keys():
             id_anime = Anime.instances_anime[anime_to_read]
@@ -215,11 +223,11 @@ def recup_data():
             with open(f"{anime_to_read}.csv", encoding ="utf-8") as episode_csv:
                 reader_ep = csv.DictReader(episode_csv, delimiter='|')
                 for saison in saison_found.keys():
-                    globals()[f"saison_{id_anime.id}_{saison}"] = Saison(id_anime,saison,saison_found[saison])
+                    globals()[f"saison_{id_anime.id_local}_{saison}"] = Saison(id_anime,saison,saison_found[saison])
                     id_saison = id_anime.dict_saisons[saison]
                     for ligne in reader_ep:
                         if ligne["saison"] == saison:
-                            globals()[f"episode_{id_anime.id}_{id_saison.saison}_{ligne['episode']}"] = Episode(id_anime,id_saison,ligne["episode"],ligne["nom_episode"])
+                            globals()[f"episode_{id_anime.id_local}_{id_saison.numero_saison}_{ligne['episode']}"] = Episode(id_anime,id_saison,ligne["episode"],ligne["nom_episode"])
                     print(f"La saison {saison} est ses épisodes de l'animé {anime_to_read} ont été récupérés")
     except FileNotFoundError:
         print("Aucune donnée n'est enregistrée !")
@@ -227,6 +235,7 @@ def recup_data():
 
 def clean_data(type = "file"):
     #STATUS : OK
+    """Nettoie les fichiers ou la mémoire des animés chargés"""
     try:
         if type == "file" or type == "all" :
             print("Suppression de toutes les données enregistrées...")
@@ -241,5 +250,3 @@ def clean_data(type = "file"):
             print("Les données de la mémoire ont été supprimées")
     except FileNotFoundError:
         print("Il n'y a aucune donnée à supprimer !")
-
-print("Version du fichier de script :" + file_version)
