@@ -3,7 +3,7 @@ import os
 import requests
 from bs4 import BeautifulSoup
 
-file_version = "V1.0"
+file_version = "V1.0.1"
 print("Version du fichier de script :" + file_version)
 
 class Episode():
@@ -78,7 +78,6 @@ class Anime():
     def ajouter_anime(cls,nom_anime):
         # STATUS : OK
         """Ajoute un animé"""
-        print(Anime.nb_anime)
         globals()[f"anime_{Anime.nb_anime-1}"] = Anime(nom_anime)
 
     def supprimer_anime(self):
@@ -134,7 +133,6 @@ class Anime():
             for episode in range(1,87+1):
                 resultats = soup.find(title = f"Épisode {episode}")
                 globals()[f"episode_{self.id_local}_1_{episode}"] = Episode(self,id_saison,episode,resultats.string)
-                print(resultats.string)
             print(f"Webscrapping effectué depuis {url}")
 
     def afficher_episodes(self):
