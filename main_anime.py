@@ -3,7 +3,7 @@ import os
 import requests
 from bs4 import BeautifulSoup
 
-file_version = "V1.0.1"
+file_version = "V1.1 beta-1"
 print("Version du fichier de script :" + file_version)
 
 class Episode():
@@ -248,3 +248,22 @@ def clean_data(type = "file"):
             print("Les données de la mémoire ont été supprimées")
     except FileNotFoundError:
         print("Il n'y a aucune donnée à supprimer !")
+
+def create_html(anime):
+    #STATUS : BETA
+    """Crée un fichier html contenant toutes les informations de l'animé choisi"""
+    default_header = f"<!DOCTYPE html>\n<html>\n<head>\n<meta charset='utf-8' />\n<title>{anime.nom_complet}</title>\n</head>\n<body>"
+    with open(f"{anime.nom_complet}.html", "w", newline='', encoding ="utf-8") as html:
+        html.write(default_header)
+        html.write(f"<h1>{anime.nom_complet}</h1>\n")
+        for saison in anime.dict_saisons.keys():
+            saison_id_memory = anime.dict_saisons[saison]
+            html.write(f"<h2>Saison {saison}</h2>")
+            html.write("\n<ul>\n")
+            for episode in saison_id_memory.dict_episodes.keys():
+                episode_id_memory = saison_id_memory.dict_episodes[episode]
+                html.write(f"<li>\n<ul>\n")
+                html.write(f"<li>Saison {saison} - Episode {episode}</li>\n")
+                html.write(f"<li id_saison = '{saison}' id_episode = '{episode}'> {episode_id_memory.nom_episode} </li>\n")
+                html.write("</ul>\n</li>\n")
+        html.write("</ul>\n</body>\n</html>\n")
