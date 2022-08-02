@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 
 file_version = "V1.1 beta-1"
 print("Version du fichier de script :" + file_version)
+server_url = "https://webserver-ubuntu.ddns.net"
 
 class Episode():
     def __init__(self,anime_id_memory,saison_id_memory,numero_episode,nom_episode):
@@ -119,21 +120,13 @@ class Anime():
             affich_saisons[saison] = self.dict_saisons[saison].nb_episodes
         return affich_saisons
 
-    def webscrapp_episodes(self):
+    def webscrapp_anime(self):
         # STATUS : BETA
-        """Récupère les informations à propos des épisodes et/ou des animés puis enregistre les informations"""
-        print("Cette fonction ne fonctionne qu'avec l'animé SNK")
-        print("ATTENTION : Fonctions obsolète qui ne fonctionne pas avec le reste des commandes")
-        url = "https://attaque-des-titans.fandom.com/fr/wiki/Liste_des_%C3%89pisodes"
-        if self.nom_complet == "SNK" :
-            page = requests.get(url)
-            soup = BeautifulSoup(page.content, 'html.parser')
-            globals()[f"saison_{self.id_local}_1"] = Saison(self,1,87)
-            id_saison = self.dict_saisons[1]
-            for episode in range(1,87+1):
-                resultats = soup.find(title = f"Épisode {episode}")
-                globals()[f"episode_{self.id_local}_1_{episode}"] = Episode(self,id_saison,episode,resultats.string)
-            print(f"Webscrapping effectué depuis {url}")
+        page = requests.get(server_url,verify = False)
+        soup = BeautifulSoup(page.content, 'html.parser')
+        for anime in soup.find_all('li'):
+            print(anime.string)
+
 
     def afficher_episodes(self):
         #STATUS : OK
@@ -147,6 +140,24 @@ class Anime():
                 affich_episode[f"S{saison}-E{episode}"] = id_episode.nom_episode
         return affich_episode
 
+    def create_html(self):
+        #STATUS : BETA
+        """Crée un fichier html contenant toutes les informations de l'animé choisi"""
+        default_header = f"<!DOCTYPE html>\n<html>\n<head>\n<meta charset='utf-8' />\n<title>{self.nom_complet}</title>\n</head>\n<body>"
+        with open(f"{self.nom_complet}.html", "w", newline='', encoding ="utf-8") as html:
+            html.write(default_header)
+            html.write(f"<h1>{self.nom_complet}</h1>\n")
+            for saison in self.dict_saisons.keys():
+                saison_id_memory = self.dict_saisons[saison]
+                html.write(f"<h2>Saison {saison}</h2>")
+                html.write("\n<ul>\n")
+                for episode in saison_id_memory.dict_episodes.keys():
+                    episode_id_memory = saison_id_memory.dict_episodes[episode]
+                    html.write(f"<li>\n<ul>\n")
+                    html.write(f"<li>Saison {saison} - Episode {episode}</li>\n")
+                    html.write(f"<li id_saison = '{saison}' id_episode = '{episode}'> {episode_id_memory.nom_episode} </li>\n")
+                    html.write("</ul>\n</li>\n")
+            html.write("</ul>\n</body>\n</html>\n")
 
 def sauv_anime():
     #STATUS : OK
@@ -248,22 +259,3 @@ def clean_data(type = "file"):
             print("Les données de la mémoire ont été supprimées")
     except FileNotFoundError:
         print("Il n'y a aucune donnée à supprimer !")
-
-def create_html(anime):
-    #STATUS : BETA
-    """Crée un fichier html contenant toutes les informations de l'animé choisi"""
-    default_header = f"<!DOCTYPE html>\n<html>\n<head>\n<meta charset='utf-8' />\n<title>{anime.nom_complet}</title>\n</head>\n<body>"
-    with open(f"{anime.nom_complet}.html", "w", newline='', encoding ="utf-8") as html:
-        html.write(default_header)
-        html.write(f"<h1>{anime.nom_complet}</h1>\n")
-        for saison in anime.dict_saisons.keys():
-            saison_id_memory = anime.dict_saisons[saison]
-            html.write(f"<h2>Saison {saison}</h2>")
-            html.write("\n<ul>\n")
-            for episode in saison_id_memory.dict_episodes.keys():
-                episode_id_memory = saison_id_memory.dict_episodes[episode]
-                html.write(f"<li>\n<ul>\n")
-                html.write(f"<li>Saison {saison} - Episode {episode}</li>\n")
-                html.write(f"<li id_saison = '{saison}' id_episode = '{episode}'> {episode_id_memory.nom_episode} </li>\n")
-                html.write("</ul>\n</li>\n")
-        html.write("</ul>\n</body>\n</html>\n")
