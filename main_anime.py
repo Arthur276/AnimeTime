@@ -3,9 +3,8 @@ import os
 import requests
 from bs4 import BeautifulSoup
 
-file_version = "V1.1 beta-1"
+file_version = "V1.1 beta-3"
 print("Version du fichier de script :" + file_version)
-server_url = "https://webserver-ubuntu.ddns.net"
 
 class Episode():
     def __init__(self,anime_id_memory,saison_id_memory,numero_episode,nom_episode):
@@ -259,3 +258,16 @@ def clean_data(type = "file"):
             print("Les données de la mémoire ont été supprimées")
     except FileNotFoundError:
         print("Il n'y a aucune donnée à supprimer !")
+
+def download_anime(nom_anime):
+    # STATUS : BETA
+    pass
+
+def check_anime():
+    #status : BETA
+    list_anime_server = []
+    page = requests.get(server_url)
+    soup = BeautifulSoup(page.content, 'html.parser')
+    for anime in soup.find_all('li'):
+        list_anime_server.append(anime.string)
+    return list_anime_server
