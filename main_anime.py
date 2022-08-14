@@ -84,15 +84,16 @@ class Anime():
             get_anime_list()
             with open("animedata_list.json","r",encoding = "utf-8") as ADJSON:
                 animelist = json.load(ADJSON)
-                for element in animelist.keys():
-                    if nom_anime == element["nom_anime"] and element["type"] == "anime":
+                for ligne in animelist.keys():
+                    dict_element = animelist[ligne]
+                    if nom_anime == dict_element["nom_anime"] and dict_element["type"] == "anime":
                          globals()[f"anime_{Anime.nb_anime-1}"] = Anime(nom_anime)
                          id_memoire_anime = Anime.instances_anime[nom_anime]
-                         for saison in element["saisons_episodes"].keys():
-                             id_memoire_anime.ajouter_saison(int(saison),len(element[nom_anime][saisons_episodes][saison]))
+                         for saison in dict_element["saisons_episodes"].keys():
+                             id_memoire_anime.ajouter_saison(int(saison),len(dict_element[nom_anime][saisons_episodes][saison]))
                              id_memoire_saison = id_memoire_anime.dict_saisons[int(saison)]
-                             for episode in element["saisons_episodes"][saison].keys():
-                                 id_memoire_saison.edit_nom_episode(int(episode),element[nom_anime][saisons_episodes][saison][episode])
+                             for episode in dict_element["saisons_episodes"][saison].keys():
+                                 id_memoire_saison.edit_nom_episode(int(episode),dict_element[nom_anime][saisons_episodes][saison][episode])
                     print("L'animé a bien été téléchargé")
 
     def supprimer_anime(self):
@@ -169,9 +170,10 @@ def get_anime_list():
         print("Données d'AnimeData téléchargées !")
         print("Version AnimeData :" + json_dict["ANIMEDATA-METADATA"]["animedata_version"])
         print("Voici les animés disponible en ligne :")
-        for element in json_dict.keys():
-            if element["type"] == "anime":
-                print(element["nom_anime"])
+        for ligne in json_dict.keys():
+            dict_data = json_dict[ligne]
+            if dict_data["type"] == "anime":
+                print(dict_data["nom_anime"])
 
 
 def sauv_anime():
