@@ -3,7 +3,7 @@ import os
 import json
 import urllib.request
 
-python_script_version = "ADV 1.0-beta"
+python_script_version = "ATV 1.0-beta"
 print("Version du script python d'AnimeTime :" + python_script_version)
 animedata_url = "https://raw.githubusercontent.com/Arthur276/AnimeData/main"
 
