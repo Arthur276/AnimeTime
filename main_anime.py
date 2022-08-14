@@ -5,7 +5,11 @@ import urllib.request
 
 python_script_version = "ATV 1.0-beta"
 print("Version du script python d'AnimeTime :" + python_script_version)
-animedata_url = "https://raw.githubusercontent.com/Arthur276/AnimeData/main"
+animedata = {"url" : "https://raw.githubusercontent.com/Arthur276/AnimeData/main/",
+            "nom_fichier_distant" : "main_anime_list.json",
+            "nom_fichier_local" : "animedata_list.json",
+            "dict_nom_anime_clé" : "nom_anime",
+            "dict_episodes_clé" : "saisons_episodes"}
 
 class Episode():
     def __init__(self,anime_id_memoire,saison_id_memoire,numero_episode,nom_episode):
@@ -64,7 +68,7 @@ class Anime():
             print(f"L'animé {nom_complet} existe déjà !")
         return instances[nom_complet]
 
-    def __init__(self, nom_complets):
+    def __init__(self, nom_complet):
         self.nom_complet = nom_complet
         self.nb_saisons = 0
         self.nb_episodes = 0
@@ -75,26 +79,15 @@ class Anime():
 
 
     @classmethod
-    def ajouter_anime(cls,nom_anime,online = True):
+    def ajouter_anime(cls,nom_anime,en_ligne = True):
         # STATUS : OK
         """Ajoute un animé"""
-        if not online:
+        if not en_ligne:
             globals()[f"anime_{Anime.nb_anime-1}"] = Anime(nom_anime)
         else:
-            get_anime_list()
-            with open("animedata_list.json","r",encoding = "utf-8") as ADJSON:
-                animelist = json.load(ADJSON)
-                for ligne in animelist.keys():
-                    dict_element = animelist[ligne]
-                    if nom_anime == dict_element["nom_anime"] and dict_element["type"] == "anime":
-                         globals()[f"anime_{Anime.nb_anime-1}"] = Anime(nom_anime)
-                         id_memoire_anime = Anime.instances_anime[nom_anime]
-                         for saison in dict_element["saisons_episodes"].keys():
-                             id_memoire_anime.ajouter_saison(int(saison),len(dict_element[nom_anime][saisons_episodes][saison]))
-                             id_memoire_saison = id_memoire_anime.dict_saisons[int(saison)]
-                             for episode in dict_element["saisons_episodes"][saison].keys():
-                                 id_memoire_saison.edit_nom_episode(int(episode),dict_element[nom_anime][saisons_episodes][saison][episode])
-                    print("L'animé a bien été téléchargé")
+            maj_anime_liste()
+            charger_anime(nom_anime,maj = False)
+
 
     def supprimer_anime(self):
         # STATUS : OK
@@ -148,9 +141,9 @@ class Anime():
         return affich_episode
 
     def export_dict(self):
-        """Exporte toutes les données  d'un animé vers un dictionnaire"""
+        """Exporte toutes les données d'un animé vers un dictionnaire"""
         #STATUS : BETA
-        json_saisons_episodes = {}
+        json_anime = {}
         for saison in self.dict_saisons.keys():
             saison_instance = self.dict_saisons[saison]
             json_episodes = {}
@@ -158,23 +151,38 @@ class Anime():
                 episode_instance = saison_instance.dict_episodes[episode]
                 json_episodes[str(episode_instance.numero_episode)] = episode_instance.nom_episode
             json_saisons_episodes[str(saison_instance.numero_saison)] = json_episodes
-        json_dict ={
-        "nom_anime" : self.nom_complet,
-        "saisons_episodes" : json_saisons_episodes}
+        json_dict ={animedata["dict_nom_anime_clé"]: self.nom_complet,animedata["dict_episodes_clé"] : json_episodes}
         return json_dict
 
-def get_anime_list():
-    urllib.request.urlretrieve(animedata_url + "/main_anime_list.json","animedata_list.json")
-    with open("animedata_list.json","r",encoding = "utf-8") as main_anime_json:
-        json_dict = json.load(main_anime_json)
+def maj_anime_liste():
+    """Télécharge le fichier source d'AnimeData contenant les données des animés"""
+    #STATUS : OK
+    urllib.request.urlretrieve(animedata["url"] + animedata["nom_fichier_distant"],animedata["nom_fichier_local"])
+    with open(animedata["nom_fichier_local"],"r",encoding = "utf-8") as animedata_json:
+        animedata_json_dict = json.load(animedata_json)
         print("Données d'AnimeData téléchargées !")
-        print("Version AnimeData :" + json_dict["ANIMEDATA-METADATA"]["animedata_version"])
+        print("Version AnimeData :" + animedata_json_dict["ANIMEDATA-METADATA"]["animedata_version"])
         print("Voici les animés disponible en ligne :")
-        for ligne in json_dict.keys():
-            dict_data = json_dict[ligne]
-            if dict_data["type"] == "anime":
-                print(dict_data["nom_anime"])
+        for element in animedata_json_dict.values():
+            if element["type"] == "anime":
+                print(element[animedata["dict_nom_anime_clé"]])
 
+def charger_anime(nom_anime,maj = False):
+    """Charge ou met a jour un animé depuis le fichier local d'AnimeData"""
+    #STATUS : OK
+    with open(animedata["nom_fichier_local"],"r",encoding ="utf-8") as animedata_json:
+        animedata_json_dict = json.load(animedata_json)
+        for element in animedata_json_dict.values():
+            if element["type"] == "anime" and nom_anime == element[animedata["dict_nom_anime_clé"]]:
+                if not maj:
+                    Anime.ajouter_anime(nom_anime,en_ligne = False)
+                id_memoire_anime = Anime.instances_anime[nom_anime]
+                for saison in element[animedata["dict_episodes_clé"]].keys():
+                    id_memoire_anime.ajouter_saison(int(saison),len(element[animedata["dict_episodes_clé"]][saison]))
+                    id_memoire_saison = id_memoire_anime.dict_saisons[int(saison)]
+                    for episode in element[animedata["dict_episodes_clé"]][saison].keys():
+                        id_memoire_saison.edit_nom_episode(int(episode),element[animedata["dict_episodes_clé"]][saison][episode])
+                print("L'animé a bien été téléchargé")
 
 def sauv_anime():
     #STATUS : OBSOLETE
