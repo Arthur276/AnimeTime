@@ -3,8 +3,8 @@ import os
 import json
 import urllib.request
 
-python_file_version = "V1.1 beta-4"
-print("Version du fichier de script :" + python_file_version)
+python_script_version = "ADV 1.0-beta"
+print("Version du script python d'AnimeTime :" + python_script_version)
 animedata_url = "https://raw.githubusercontent.com/Arthur276/AnimeData/main"
 
 class Episode():
@@ -41,8 +41,7 @@ class Saison():
     def edit_nom_episode(self,numero_episode,nom):
         # STATUS : OK
         """Renomme un épisode"""
-        self.dict_episodes[f"E{numero_episode}"].nom_episode = nom
-        globals()[f"episode_{self.anime.id_local}_{self.numero_saison}_{numero_episode}"].nom_episode = nom
+        self.dict_episodes[numero_episode].nom_episode = nom
 
     def afficher_episodes_saison(self):
         # STATUS : OK
@@ -65,7 +64,7 @@ class Anime():
             print(f"L'animé {nom_complet} existe déjà !")
         return instances[nom_complet]
 
-    def __init__(self, nom_complet, verification_uuid = None):
+    def __init__(self, nom_complets):
         self.nom_complet = nom_complet
         self.nb_saisons = 0
         self.nb_episodes = 0
@@ -94,7 +93,7 @@ class Anime():
                              id_memoire_saison = id_memoire_anime.dict_saisons[int(saison)]
                              for episode in element["saisons_episodes"][saison].keys():
                                  id_memoire_saison.edit_nom_episode(int(episode),element[nom_anime][saisons_episodes][saison][episode])
-                         print("L'animé a bien été téléchargé")
+                    print("L'animé a bien été téléchargé")
 
     def supprimer_anime(self):
         # STATUS : OK
