@@ -1,11 +1,14 @@
-import csv
-import os
 import json
 import urllib.request
 
 python_script_version = "ATV 1.0-beta"
 print("Version du script python d'AnimeTime :" + python_script_version)
-animedata_url = "https://raw.githubusercontent.com/Arthur276/AnimeData/main"
+animedata = {"url" : "https://raw.githubusercontent.com/Arthur276/AnimeData/main/",
+            "nom_fichier_distant" : "main_anime_list.json",
+            "nom_fichier_local" : "animedata_list.json",
+            "dict_nom_anime_clé" : "nom_anime",
+            "dict_episodes_clé" : "saisons_episodes",
+            "nom_fichier_personalisé" : "animetime_local.json"}
 
 class Episode():
     def __init__(self,anime_id_memoire,saison_id_memoire,numero_episode,nom_episode):
@@ -64,7 +67,7 @@ class Anime():
             print(f"L'animé {nom_complet} existe déjà !")
         return instances[nom_complet]
 
-    def __init__(self, nom_complets):
+    def __init__(self, nom_complet):
         self.nom_complet = nom_complet
         self.nb_saisons = 0
         self.nb_episodes = 0
@@ -75,25 +78,15 @@ class Anime():
 
 
     @classmethod
-    def ajouter_anime(cls,nom_anime,online = True):
+    def ajouter_anime(cls,nom_anime,en_ligne = True):
         # STATUS : OK
         """Ajoute un animé"""
-        if not online:
+        if not en_ligne:
             globals()[f"anime_{Anime.nb_anime-1}"] = Anime(nom_anime)
         else:
-            get_anime_list()
-            with open("animedata_list.json","r",encoding = "utf-8") as ADJSON:
-                animelist = json.load(ADJSON)
-                for element in animelist.keys():
-                    if nom_anime == element["nom_anime"] and element["type"] == "anime":
-                         globals()[f"anime_{Anime.nb_anime-1}"] = Anime(nom_anime)
-                         id_memoire_anime = Anime.instances_anime[nom_anime]
-                         for saison in element["saisons_episodes"].keys():
-                             id_memoire_anime.ajouter_saison(int(saison),len(element[nom_anime][saisons_episodes][saison]))
-                             id_memoire_saison = id_memoire_anime.dict_saisons[int(saison)]
-                             for episode in element["saisons_episodes"][saison].keys():
-                                 id_memoire_saison.edit_nom_episode(int(episode),element[nom_anime][saisons_episodes][saison][episode])
-                    print("L'animé a bien été téléchargé")
+            maj_anime_liste()
+            charger_anime(nom_anime,maj = False)
+
 
     def supprimer_anime(self):
         # STATUS : OK
@@ -147,130 +140,71 @@ class Anime():
         return affich_episode
 
     def export_dict(self):
-        """Exporte toutes les données  d'un animé vers un dictionnaire"""
-        #STATUS : BETA
-        json_saisons_episodes = {}
-        for saison in self.dict_saisons.keys():
-            saison_instance = self.dict_saisons[saison]
+        """Exporte toutes les données d'un animé vers un dictionnaire"""
+        #STATUS : OK
+        json_saisons = {}
+        for saison in self.dict_saisons.values():
             json_episodes = {}
-            for episode in saison_instance.dict_episodes.keys():
-                episode_instance = saison_instance.dict_episodes[episode]
-                json_episodes[str(episode_instance.numero_episode)] = episode_instance.nom_episode
-            json_saisons_episodes[str(saison_instance.numero_saison)] = json_episodes
-        json_dict ={
-        "nom_anime" : self.nom_complet,
-        "saisons_episodes" : json_saisons_episodes}
+            for episode in saison.dict_episodes.values():
+                json_episodes[str(episode.numero_episode)] = episode.nom_episode
+            json_saisons[str(saison.numero_saison)] = json_episodes
+        json_dict ={"type" : "anime", animedata["dict_nom_anime_clé"]: self.nom_complet,animedata["dict_episodes_clé"] : json_saisons}
         return json_dict
 
-def get_anime_list():
-    urllib.request.urlretrieve(animedata_url + "/main_anime_list.json","animedata_list.json")
-    with open("animedata_list.json","r",encoding = "utf-8") as main_anime_json:
-        json_dict = json.load(main_anime_json)
+def maj_anime_liste():
+    """Télécharge le fichier source d'AnimeData contenant les données des animés"""
+    #STATUS : OK
+    urllib.request.urlretrieve(animedata["url"] + animedata["nom_fichier_distant"],animedata["nom_fichier_local"])
+    with open(animedata["nom_fichier_local"],"r",encoding = "utf-8") as animedata_json:
+        animedata_json_dict = json.load(animedata_json)
         print("Données d'AnimeData téléchargées !")
-        print("Version AnimeData :" + json_dict["ANIMEDATA-METADATA"]["animedata_version"])
+        print("Version AnimeData :" + animedata_json_dict["ANIMEDATA-METADATA"]["animedata_version"])
         print("Voici les animés disponible en ligne :")
-        for element in json_dict.keys():
+        for element in animedata_json_dict.values():
             if element["type"] == "anime":
-                print(element["nom_anime"])
+                print(element[animedata["dict_nom_anime_clé"]])
 
+def charger_anime(nom_anime,maj = False,local = False):
+    """Charge ou met a jour un animé depuis le fichier local d'AnimeData ou un fichier personalisé"""
+    #STATUS : OK
+    if local :
+        fichier_cible = "nom_fichier_personalisé"
+    if not local :
+        fichier_cible = "nom_fichier_local"
+    with open(animedata[fichier_cible],"r",encoding ="utf-8") as animedata_json:
+        anime_dict = json.load(animedata_json)
+        for element in anime_dict.values():
+            if element["type"] == "anime" and nom_anime == element[animedata["dict_nom_anime_clé"]]:
+                if not maj:
+                    Anime.ajouter_anime(nom_anime,en_ligne = False)
+                id_memoire_anime = Anime.instances_anime[nom_anime]
+                for saison in element[animedata["dict_episodes_clé"]].keys():
+                    id_memoire_anime.ajouter_saison(int(saison),len(element[animedata["dict_episodes_clé"]][saison]))
+                    id_memoire_saison = id_memoire_anime.dict_saisons[int(saison)]
+                    for episode in element[animedata["dict_episodes_clé"]][saison].keys():
+                        id_memoire_saison.edit_nom_episode(int(episode),element[animedata["dict_episodes_clé"]][saison][episode])
+                print("L'animé a bien été chargé")
 
-def sauv_anime():
-    #STATUS : OBSOLETE
-    """Enregistre les animés dans le fichier anime.csv"""
-    print("Enregistrement des animés en cours...")
-    header = ["anime","saisons","episodes"]
-    with open("anime.csv", "w", newline='', encoding ="utf-8") as main_csv:
-        writer = csv.writer(main_csv, delimiter=',')
-        writer.writerow(header)
-        for anime_to_save in Anime.instances_anime.keys():
-            id_anime_to_save = Anime.instances_anime[anime_to_save]
-            ligne = [id_anime_to_save.nom_complet, id_anime_to_save.nb_saisons, id_anime_to_save.nb_episodes]
-            writer.writerow(ligne)
-    print("Les animés ont été enregistrés dans le fichier 'anime.csv'.")
+def sauv_json():
+    """Sauvegarde les données des animés dans un fichier JSON personalisé"""
+    #STATUS : OK
+    with open(animedata["nom_fichier_personalisé"],"w",encoding = "utf-8") as animetime_local_json:
+        dict_local_json = {}
+        dict_local_json["ANIMETIME-METADATA"] = {"type" : "metadata","animetime_version" : python_script_version}
+        for anime in Anime.instances_anime.values():
+            dict_local_json[anime.nom_complet] = anime.export_dict()
+        json.dump(obj = dict_local_json, fp = animetime_local_json,ensure_ascii = False)
 
-def sauv_episodes():
-    #STATUS : OBSOLETE
-    """Enregistre les episodes des animés présents dans le fichier anime.csv dans un fichier 'nom_anime'"""
-    print("Enregistrement des noms d'épisodes des animés...")
-    for anime_to_save in Anime.instances_anime.keys():
-        id_anime = Anime.instances_anime[anime_to_save]
-        with open("anime.csv","r",newline='', encoding ="utf-8") as verif_csv:
-            reader = csv.DictReader(verif_csv,delimiter = ',')
-            anime_saved = []
-            for ligne in reader:
-                anime_saved.append(ligne["anime"])
-        if anime_to_save in anime_saved:
-            with open(f"{anime_to_save}.csv", "w", newline = '', encoding ="utf-8") as main_csv:
-                writer = csv.writer(main_csv, delimiter='|')
-                header = ["saison","episode","nom_episode"]
-                writer.writerow(header)
-                for saison in id_anime.dict_saisons.keys():
-                    id_saison = id_anime.dict_saisons[saison]
-                    for episode in id_saison.dict_episodes.keys():
-                        id_episode = id_saison.dict_episodes[episode]
-                        ligne = [id_saison.saison,id_episode.numero_episode,id_episode.nom_episode]
-                        writer.writerow(ligne)
-            print(f"Les noms des épisodes de {anime_to_save} ont été enregistrés dans {anime_to_save}.csv .")
-        else :
-            print("L'animé n'est pas enregistré dans le fichier principal 'anime.csv', il ne pourra pas être récupéré.")
-            print("Veuillez utiliser la fonction sauv_anime avant de rééxécuter cette fonction ou alors utilisez la fonction sauv_data")
-
-def sauv_data():
-    #STATUS : OBSOLETE
-    """Combine les deux fonctions de sauvegarde"""
-    print("Enregistrement de toutes les données (Animés et Épisodes)...")
-    sauv_anime()
-    sauv_episodes()
-    print("Toutes les données ont été correctement enregistrées.")
-
-def recup_data():
-    #STATUS : OBSOLETE
-    """Récupère les données des animés dans le fichier anime.csv s'il est présent, puis récupère les fichiers par animé pour obtenir les épisodes"""
-    print("Les animés vont être récupérés s'ils sont présents dans le fichier 'anime.csv'.")
-    print("Récupération des données en cours...")
-    try:
-        with open("anime.csv", "r", encoding ="utf-8") as main_csv:
-            reader = csv.DictReader(main_csv, delimiter=',')
-            for ligne in reader:
-                Anime.ajouter_anime(ligne["anime"],online = False)
-        print("Les noms des épisodes des animés présents dans le fichier 'anime.csv' vont être récupérés")
-        for anime_to_read in Anime.instances_anime.keys():
-            id_anime = Anime.instances_anime[anime_to_read]
-            with open(f"{anime_to_read}.csv", encoding ="utf-8") as anime_csv:
-                reader = csv.DictReader(anime_csv, delimiter='|')
-                saison_found = {}
-                for ligne in reader :
-                    if ligne["saison"] in saison_found.keys():
-                        saison_found[ligne["saison"]] = saison_found[ligne["saison"]] + 1
-                    else:
-                        saison_found[ligne["saison"]] = 1
-            with open(f"{anime_to_read}.csv", encoding ="utf-8") as episode_csv:
-                reader_ep = csv.DictReader(episode_csv, delimiter='|')
-                for saison in saison_found.keys():
-                    globals()[f"saison_{id_anime.id_local}_{saison}"] = Saison(id_anime,saison,saison_found[saison])
-                    id_saison = id_anime.dict_saisons[saison]
-                    for ligne in reader_ep:
-                        if ligne["saison"] == saison:
-                            globals()[f"episode_{id_anime.id_local}_{id_saison.numero_saison}_{ligne['episode']}"] = Episode(id_anime,id_saison,ligne["episode"],ligne["nom_episode"])
-                    print(f"La saison {saison} est ses épisodes de l'animé {anime_to_read} ont été récupérés")
-    except FileNotFoundError:
-        print("Aucune donnée n'est enregistrée !")
-
-
-def clean_data(type = "file"):
-    #STATUS : OBSOLETE
-    """Nettoie les fichiers ou la mémoire des animés chargés"""
-    try:
-        if type == "file" or type == "all" :
-            print("Suppression de toutes les données enregistrées...")
-            for anime_to_delete in Anime.instances_anime.keys():
-                id_anime = Anime.instances_anime[anime_to_delete]
-                os.remove(f"{anime_to_delete}.csv")
-            os.remove("anime.csv")
-            print("Les données des fichiers ont été correctement supprimées.")
-        if type == "memoire" or type == "all" :
-            for anime_instance in Anime.instances_anime.keys():
-                del Anime.instances_anime[anime_instance]
-            print("Les données de la mémoire ont été supprimées")
-    except FileNotFoundError:
-        print("Il n'y a aucune donnée à supprimer !")
+def charger_tous_anime(local = True,maj = False):
+    """Charges tous les animés en local ou en distant"""
+    #STATUS : OK
+    with open(animedata["nom_fichier_personalisé"],"r",encoding = "utf-8") as animetime_local_json:
+        dict_anime = json.load(animetime_local_json)
+        list_anime = []
+        for element in dict_anime.values():
+            if element["type"] == "anime":
+                list_anime.append(element[animedata["dict_nom_anime_clé"]])
+    print("Les animés suivants vont êtres chargés:")
+    print(list_anime)
+    for anime in list_anime:
+        charger_anime(anime, local = True)
