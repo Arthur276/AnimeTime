@@ -8,13 +8,18 @@ animedata = {"url" : "https://raw.githubusercontent.com/Arthur276/AnimeData/main
             "nom_fichier_local" : "animedata_list.json",
             "dict_nom_anime_clé" : "nom_anime",
             "dict_episodes_clé" : "saisons_episodes",
-            "nom_fichier_personalisé" : "animetime_local.json"}
+            "nom_fichier_personalisé" : "animetime_local.json",
+            "dict_episode_duree_clé" : "duree_episode",
+            "dict_episode_date_sortie_clé" : "date_sortie_episode",
+            "dict_nom_episode" : "nom_episode"}
 
 class Episode():
     def __init__(self,anime_id_memoire,saison_id_memoire,numero_episode,nom_episode):
         self.anime_id_memoire = anime_id_memoire
         self.saison_id_memoire = saison_id_memoire
         self.numero_episode = numero_episode
+        self.duree = 0
+        self.date_sortie = ""
         saison_id_memoire.dict_episodes[numero_episode] = self
         self.nom_episode = nom_episode
 
@@ -39,10 +44,15 @@ class Saison():
         for episode in range(1,self.nb_episodes+1):
             globals()[f"episode_{self.anime_id_memoire.id_local}_{self.numero_saison}_{episode}"] = Episode(self.anime_id_memoire,self,episode,f"Episode {episode}")
 
-    def edit_nom_episode(self,numero_episode,nom):
+    def edit_info_episode(self,numero_episode,info_modifié,nouvelle_valeur):
         # STATUS : OK
-        """Renomme un épisode"""
-        self.dict_episodes[numero_episode].nom_episode = nom
+        """Édite les informations d'un épisode"""
+        if info_modifié == "nom_episode":
+            self.dict_episodes[numero_episode].nom_episode = nouvelle_valeur
+        elif info_modifié == "duree_episode":
+            self.dict_episodes[numero_episode].duree = nouvelle_valeur
+        elif info_modifié == "date_sortie":
+            self.dict_episodes[numero_episode].date_sortie = nouvelle_valeur
 
     def afficher_episodes_saison(self):
         # STATUS : OK
@@ -122,7 +132,9 @@ class Anime():
         for saison in self.dict_saisons.values():
             json_episodes = {}
             for episode in saison.dict_episodes.values():
-                json_episodes[str(episode.numero_episode)] = episode.nom_episode
+                json_episodes[str(episode.numero_episode)] = {animedata["dict_episode_date_sortie_clé"] : episode.date_sortie,
+                                                            animedata["dict_episode_duree_clé"] : episode.date_sortie,
+                                                            animedata["dict_nom_episode"] : episode.nom_episode}
             json_saisons[str(saison.numero_saison)] = json_episodes
         json_dict ={"type" : "anime", animedata["dict_nom_anime_clé"]: self.nom_complet,animedata["dict_episodes_clé"] : json_saisons}
         return json_dict
@@ -158,7 +170,9 @@ def charger_anime(nom_anime,maj = False,local = False):
                     anime_id_memoire.ajouter_saison(int(saison),len(element[animedata["dict_episodes_clé"]][saison]))
                     id_memoire_saison = anime_id_memoire.dict_saisons[int(saison)]
                     for episode in element[animedata["dict_episodes_clé"]][saison].keys():
-                        id_memoire_saison.edit_nom_episode(int(episode),element[animedata["dict_episodes_clé"]][saison][episode])
+                        id_memoire_saison.edit_info_episode(int(episode),"nom_episode",element[animedata["dict_episodes_clé"]][saison][episode][animedata["dict_nom_episode"]])
+                        id_memoire_saison.edit_info_episode(int(episode),"date_sortie",element[animedata["dict_episodes_clé"]][saison][episode]animedata["dict_episode_date_sortie_clé"])
+                        id_memoire_saison.edit_info_episode(int(episode),"duree_episode",element[animedata["dict_episodes_clé"]][saison][episode]animedata["dict_episode_duree_clé"])
                 print("L'animé a bien été chargé")
 
 def sauv_json():
