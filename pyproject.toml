@@ -8,6 +8,7 @@ version = "0.1"
 authors = [
  {name="Arthur276", email="arthur.cott@free.fr"}
 ]
+description = "Un package pour gérer ses animés facilement"
 readme = "README.md"
 requires-python = ">=3.7"
 classifiers = [
@@ -15,6 +16,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+dependecies = ["AnimeData"]
 [project.urls]
 "Homepage" = "https://github.com/Arthur276/AnimeTime"
 "Bug Tracker" = "https://github.com/Arthur276/AnimeTime/issues"
