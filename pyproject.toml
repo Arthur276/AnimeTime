@@ -16,7 +16,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-dependecies = ["AnimeData"]
+dependencies = ["AnimeData"]
 [project.urls]
 "Homepage" = "https://github.com/Arthur276/AnimeTime"
 "Bug Tracker" = "https://github.com/Arthur276/AnimeTime/issues"
