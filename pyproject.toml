@@ -2,19 +2,30 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build]
+exclude = [
+  "/dist",
+  "/.git",
+  ".gitignore"
+  ]
+
 [project]
 name = "AnimeTime"
-version = "0.1"
+version = "0.1.4"
 authors = [
- {name="Arthur276", email="arthur.cott@free.fr"}
+ {name="cassphir", email=""}
 ]
+description = "Un module pour gérer ses animés facilement"
 readme = "README.md"
 requires-python = ">=3.7"
+license = "MIT"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+dependencies = ["AnimeData"]
+
 [project.urls]
-"Homepage" = "https://github.com/Arthur276/AnimeTime"
-"Bug Tracker" = "https://github.com/Arthur276/AnimeTime/issues"
+"Github" = "https://github.com/cassphir/AnimeTime"
+"Bug" = "https://github.com/cassphir/AnimeTime/issues"

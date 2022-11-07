@@ -1,6 +1,6 @@
 # AnimeTime
 
-AnimeTime est un projet développé par Arthur276.
+AnimeTime est un projet développé par cassphir.
 
 L'objectif est de proposer à l'utilisateur un moyen simple de suivre sa progression de visionnage de ses animés favoris.
 
