@@ -146,7 +146,7 @@ def charger_anime(anime,ad_source = True):
     """Charge un animé"""
     #STATUS : BETA
     if ad_source:
-        ad.maj_anime_liste()
+        ad.maj_anime_lib()
     dict_ad = ad.get_json_dict(ad_source)
     anime_data = dict_ad[anime]
     id_anime = Anime.instances_anime[anime]
