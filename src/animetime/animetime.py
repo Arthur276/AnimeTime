@@ -1,6 +1,6 @@
 import animedata as ad
 
-at_version = "ATV-0.1"
+at_version = "0.1.4"
 print("Version du script python d'AnimeTime : ", at_version)
 
 class Episode():
@@ -75,7 +75,6 @@ class Anime():
         # STATUS : BETA
         """Ajoute un animé"""
         if load:
-            Anime.ajouter_anime(nom_anime,load = False,ad_source = False)
             if ad_source:
                 charger_anime(nom_anime,ad_source = True)
             else:
@@ -132,10 +131,10 @@ class Anime():
 
 def format_dict(list_str_anime):
     """Formate les dictionnaires d'animés afin qu'AnimeData puisse les traiter"""
-    #STATUS : BETA
+    #STATUS : OK
     dict_anime = {}
     if type(list_str_anime) is list:
-        for anime_to_format in list_anime:
+        for anime_to_format in list_str_anime:
             dict_anime[anime_to_format] = Anime.instances_anime[anime_to_format].export_dict()
     elif type(list_str_anime) is str:
         dict_anime[list_str_anime] = Anime.instances_anime[list_str_anime].export_dict()
@@ -144,11 +143,13 @@ def format_dict(list_str_anime):
 
 def charger_anime(anime,ad_source = True):
     """Charge un animé"""
-    #STATUS : BETA
+    #STATUS : OK
     if ad_source:
         ad.maj_anime_lib()
     dict_ad = ad.get_json_dict(ad_source)
     anime_data = dict_ad[anime]
+    if anime not in Anime.instances_anime.keys():
+        Anime.ajouter_anime(anime,load = False,ad_source = False)
     id_anime = Anime.instances_anime[anime]
     for saison in anime_data[ad.animedata["dict_saisons_episodes"]].keys():
         dict_saison = anime_data[ad.animedata["dict_saisons_episodes"]][saison]
@@ -161,6 +162,6 @@ def charger_anime(anime,ad_source = True):
             id_episode.date_sortie = dict_episode[ad.animedata["dict_date_sortie_episode"]]
             id_episode.nom_episode = dict_episode[ad.animedata["dict_nom_episode"]]
     if ad_source:
-        print(f"L'animé {anime} a été chargé depuis le fichier personalisé")
-    else:
         print(f"L'animé {anime} a été chargé depuis le fichier local d'AnimeData")
+    else:
+        print(f"L'animé {anime} a été chargé depuis le fichier personalisé")
