@@ -1,6 +1,8 @@
 import animedata as ad
+import tomli
 
-at_version = "0.1.5"
+with open("../../pyproject.toml", mode "rb") as pypr:
+    at_version = tomli.load(pypr)["project"]["version"]
 print("Version du script python d'AnimeTime : ", at_version)
 
 class Episode():
@@ -28,11 +30,13 @@ class Saison():
         except ValueError:
             print("Le numéro de la saison doit être un entier !")
 
+
     def init_episodes(self):
         # STATUS : OK
         """Crée les épisodes d'une saison au format 'Episode XX'"""
         for episode in range(1,self.nb_episodes+1):
             globals()[f"episode_{self.anime_id_memoire.id_local}_{self.numero_saison}_{episode}"] = Episode(self.anime_id_memoire,self,episode,f"Episode {episode}")
+
 
     def edit_info_episode(self,numero_episode,info_modifié,nouvelle_valeur):
         # STATUS : OK
@@ -44,11 +48,13 @@ class Saison():
         elif info_modifié == "date_sortie":
             self.dict_episodes[numero_episode].date_sortie = nouvelle_valeur
 
+
     def afficher_episodes_saison(self):
         # STATUS : OK
         """Affiche les episode d'une saison"""
         dict_anime = self.anime_id_memoire.export_dict()
         return dict_anime[ad.animedata["dict_episodes_clé"]][str(self.numero_saison)]
+
 
 class Anime():
     instances_anime = {}
@@ -62,6 +68,7 @@ class Anime():
         else:
             print(f"L'animé {nom_complet} existe déjà !")
         return instances[nom_complet]
+
 
     def __init__(self, nom_complet):
         self.nom_complet = nom_complet
@@ -89,6 +96,7 @@ class Anime():
         del Anime.instances_anime[self.nom_complet]
         print(f"L'animé {self.nom_complet} à été supprimé")
 
+
     @classmethod
     def afficher_anime(cls):
         # STATUS : OK
@@ -105,17 +113,20 @@ class Anime():
         """Ajoute une saison a un animé"""
         globals()[f"saison_{self.id_local}_{numero_saison}"] = Saison(self,numero_saison,nb_episodes, init = True)
 
+
     def supprimer_saison(self,numero_saison):
         # STATUS : OK
         """Supprime une saison d'un animé"""
         del self.dict_saisons[numero_saison]
         print(f"La saison {numero_saison} de l'anime {self.nom_complet} et ses épisodes ont été supprimés")
 
+
     def afficher_saisons_episodes(self):
         # STATUS : OK
         """Retourne un dictionnaire contenant les saisons et ses épisodes d'un animé"""
         dict_anime = self.export_dict()
         return dict_anime[ad.animedata["dict_saisons_episodes"]]
+
 
     def export_dict(self):
         """Exporte toutes les données d'un animé vers un dictionnaire, utilisable par AnimeData après avoir été formaté"""
@@ -128,6 +139,7 @@ class Anime():
             json_saisons[str(saison.numero_saison)] = json_episodes
         json_dict ={"type" : "anime", ad.animedata["dict_nom_anime"]: self.nom_complet,ad.animedata["dict_saisons_episodes"] : json_saisons}
         return json_dict
+
 
 def format_dict(list_str_anime):
     """Formate les dictionnaires d'animés afin qu'AnimeData puisse les traiter"""
