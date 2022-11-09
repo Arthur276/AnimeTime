@@ -1,6 +1,6 @@
 import animedata as ad
 
-at_version = "0.1.4"
+at_version = "0.1.5"
 print("Version du script python d'AnimeTime : ", at_version)
 
 class Episode():
