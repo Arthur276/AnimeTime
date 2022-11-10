@@ -1,7 +1,7 @@
 import animedata as ad
 import tomli
 
-with open("../../pyproject.toml", mode "rb") as pypr:
+with open("./pyproject.toml", mode="rb") as pypr:
     at_version = tomli.load(pypr)["project"]["version"]
 print("Version du script python d'AnimeTime : ", at_version)
 
