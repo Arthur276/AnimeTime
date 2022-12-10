@@ -7,7 +7,25 @@ print("AnimeTime python script version : ", at_version)
 
 
 class Episode():
+    """a class to create episodes
+
+    Attributes:
+        anime_id_memory (object): anime object related to the episode
+        season_id_memory (object): season object related to the episode
+        episode_number (int): episode number
+        episode_name (str): episode name
+        episode_duration (int): episode duration (in seconds)
+        release_date (dict): dictionnary contaning episode's release date
+    """
     def __init__(self, anime_id_memory: object, season_id_memory: object, episode_number: int, episode_name: str):
+        """initializes an Episode's instance and adds itself to its season's index
+
+        Args:
+            anime_id_memory (object): anime object related to the episode
+            season_id_memory (object): season object related to the episode
+            episode_number (int): episode number
+            episode_name (str): episode name
+        """
         self.anime_id_memory = anime_id_memory
         self.season_id_memory = season_id_memory
         self.episode_number = episode_number
@@ -18,7 +36,23 @@ class Episode():
 
 
 class Season():
+    """a class to create seasons
+
+    Attributes:
+        anime_id_memory (object): anime object related to the season
+        number_of_episodes (int): number of episodes in the season
+        season_number (int): season number
+        episodes_index (dict): season episode index. key = episode number, value = episode object
+    """
     def __init__(self,anime_id_memory: object, season_number: int, number_of_episodes: int, init_episodes: bool):
+        """initializes an Season's instance and adds itself to its anime's index"
+
+        Args:
+            anime_id_memory (object): anime object related to the season
+            season_number (int): season number
+            number_of_episodes (int): number of episodes in the season
+            init_episodes (bool): define if the method init_episodes() is executed.
+        """
         self.anime_id_memory = anime_id_memory
         self.number_of_episodes = number_of_episodes
         self.season_number = season_number
@@ -31,15 +65,21 @@ class Season():
 
 
     def init_episodes(self):
-        # STATUS : OK
-        """Crée les épisodes d'une season au format 'Episode XX'"""
+        """initializes every episode of the season using number_if_episodes with a formatted name"""
+        #STATUS : OK
         for episode in range(1, self.number_of_episodes+1):
             globals()[f"episode_{self.anime_id_memory.local_id}_{self.season_number}_{episode}"] = Episode(self.anime_id_memory,self,episode,f"Episode {episode}")
 
 
-    def edit_episode_data(self,episode_number: int,modified_attribute: str,new_value):
+    def edit_episode_data(self,episode_number: int,modified_attribute: str,new_value:any):
+        """edits a specific attribute of an episode
+
+        Args:
+            episode_number (int): number of the episode to be modified
+            modified_attribute (str): attribute to be modified
+            new_value (any): new value of the modified attribute
+        """
         # STATUS : OK
-        """Édite les informations d'un épisode"""
         if modified_attribute == "episode_name":
             self.episodes_index[episode_number].episode_name = new_value
         elif modified_attribute == "episode_duration":
@@ -49,12 +89,19 @@ class Season():
 
 
     def export_episodes(self) -> dict:
+        """exports episodes data of the season
+
+        Returns:
+            dict: dictionnary containing episodes data of the season
+        """
         # STATUS : OK
-        """Affiche les episode d'une season"""
         episodes_data = self.anime_id_memory.export_dict()
         return episodes_data[ad.ad_table["key_seasons_episodes"]][str(self.season_number)]
 
 class Anime():
+    """a class to create animes
+
+    """
     anime_instances = {}
     id_anime = 0
 
@@ -81,9 +128,9 @@ class Anime():
         """Ajoute un animé"""
         if load:
             if ad_source:
-                charger_anime(anime_name,ad_source = True)
+                load_anime(anime_name,ad_source = True)
             else:
-                charger_anime(anime_name,ad_source = False)
+                load_anime(anime_name,ad_source = False)
         else:
             globals()[f"anime_{Anime.id_anime-1}"] = Anime(anime_name)
 
