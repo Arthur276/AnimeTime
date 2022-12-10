@@ -13,7 +13,7 @@ exclude = [
 name = "animetime"
 version = "0.1.6"
 authors = [
- {name="cassphir", email=""}
+ {name="swarthur", email=""}
 ]
 description = "Un module pour gérer ses animés facilement"
 readme = "README.md"
@@ -27,5 +27,5 @@ classifiers = [
 dependencies = ["animedata","tomli"]
 
 [project.urls]
-"Github" = "https://github.com/cassphir/animetime"
-"Bug" = "https://github.com/cassphir/animetime/issues"
+"Github" = "https://github.com/swarthur/animetime"
+"Bug" = "https://github.com/swarthur/animetime/issues"
