@@ -151,12 +151,12 @@ def format_dict(list_str_anime):
     return dict_anime
 
 
-def charger_anime(anime,ad_source = True):
+def load_anime(anime,ad_source = True):
     """Charge un animé"""
     #STATUS : OK
     if ad_source:
         ad.update_anime_lib()
-    dict_ad = ad.get_json_dict(ad_source)
+    dict_ad = ad.load_json_dict(ad_source)
     anime_data = dict_ad[anime]
     if anime not in Anime.anime_instances.keys():
         Anime.add_anime(anime,load = False,ad_source = False)
