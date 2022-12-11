@@ -18,7 +18,7 @@ class Episode():
         release_date (dict): dictionnary contaning episode's release date
     """
     def __init__(self, anime_id_memory: object, season_id_memory: object, episode_number: int, episode_name: str):
-        """initializes an Episode's instance and adds itself to its season's index
+        """initializes an Episode instance and adds itself to its season's index
 
         Args:
             anime_id_memory (object): anime object related to the episode
@@ -42,16 +42,16 @@ class Season():
         anime_id_memory (object): anime object related to the season
         number_of_episodes (int): number of episodes in the season
         season_number (int): season number
-        episodes_index (dict): season episode index. key = episode number, value = episode object
+        episodes_index (dict): index of every episode instance of the season, binding episode number and its object
     """
     def __init__(self,anime_id_memory: object, season_number: int, number_of_episodes: int, init_episodes: bool):
-        """initializes an Season's instance and adds itself to its anime's index"
+        """initializes an Season instance and adds itself to its anime's index"
 
         Args:
             anime_id_memory (object): anime object related to the season
             season_number (int): season number
             number_of_episodes (int): number of episodes in the season
-            init_episodes (bool): define if the method init_episodes() is executed.
+            init_episodes (bool): defines if the method init_episodes() is executed.
         """
         self.anime_id_memory = anime_id_memory
         self.number_of_episodes = number_of_episodes
@@ -100,45 +100,70 @@ class Season():
 
 class Anime():
     """a class to create animes
-
+    
+    Attributes:
+        animes_index (dict, class attribute): index of every Anime instance binding anime name and its object
+        animes_number (int, class attribute): number of animes instanced, used to create unique anime instances
+        name(str) : anime name
+        seasons_index (dict) : index of every Season instance of the anime, binding season number and its object
+        local_id (int): anime number, only depending of animes_number when instanced and only used for instance name
     """
-    anime_instances = {}
-    id_anime = 0
+    animes_index = {}
+    animes_number = 0
 
-    def __new__(cls, anime_name):
-        instances = cls.anime_instances
+    def __new__(cls, anime_name:str):
+        """checks if an Anime instance already has the exact same name as anime_name
+
+        Args:
+            anime_name (str): anime name
+
+        Raises:
+            RuntimeError: if an Anime instance has the exact same name as anime_name
+
+        """
+        instances = cls.animes_index
         if anime_name not in instances.keys():
-            instances[anime_name] = super(Anime, cls).__new__(cls)
             print(f"{anime_name} has been added !")
-            return instances[anime_name]
+            return super(Anime, cls).__new__(cls)
         else:
-            print(f"{anime_name} already exists !")
+            raise RuntimeError("An Anime instance with the exact same name already exists")
 
 
-    def __init__(self, anime_name):
+    def __init__(self, anime_name:str):
+        """Initialize an Anime instance and increase by one animes_number
+
+        Args:
+            anime_name (str): anime_name
+        """
         self.name = anime_name
         self.seasons_index = {}
-        self.local_id = Anime.id_anime
-        Anime.id_anime += 1
+        self.local_id = Anime.animes_number
+        Anime.animes_number += 1
 
 
     @classmethod
-    def add_anime(cls,anime_name,load = False, ad_source = False):
+    def add_anime(cls,anime_name:str,load:bool = False, ad_source:bool = False):
+        """adds an anime by creating an Anime instance
+
+        Args:
+            anime_name (str): anime name
+            load (bool, optional): defines if the anime l . Defaults to False.
+            ad_source (bool, optional): _description_. Defaults to False.
+        """
         # STATUS : BETA
-        """Ajoute un animé"""
         if load:
             if ad_source:
                 load_anime(anime_name,ad_source = True)
             else:
                 load_anime(anime_name,ad_source = False)
         else:
-            globals()[f"anime_{Anime.id_anime-1}"] = Anime(anime_name)
+            globals()[f"anime_{Anime.animes_number-1}"] = Anime(anime_name)
 
 
     def delete_anime(self):
         # STATUS : OK
         """Supprime un animé"""
-        del Anime.anime_instances[self.name]
+        del Anime.animes_index[self.name]
         print(f"L'animé {self.name} à été supprimé")
 
 
@@ -148,7 +173,7 @@ class Anime():
         """Retourne une liste contenant les nom des animés chargés"""
         list_anime = []
         print("Voici les animés ajoutés : ")
-        for instance in Anime.anime_instances.values():
+        for instance in Anime.animes_index.values():
             list_anime.append(instance.name)
         return list_anime
 
@@ -192,9 +217,9 @@ def format_dict(list_str_anime):
     dict_anime = {}
     if type(list_str_anime) is list:
         for anime_to_format in list_str_anime:
-            dict_anime[anime_to_format] = Anime.anime_instances[anime_to_format].export_dict()
+            dict_anime[anime_to_format] = Anime.animes_index[anime_to_format].export_dict()
     elif type(list_str_anime) is str:
-        dict_anime[list_str_anime] = Anime.anime_instances[list_str_anime].export_dict()
+        dict_anime[list_str_anime] = Anime.animes_index[list_str_anime].export_dict()
     return dict_anime
 
 
@@ -205,9 +230,9 @@ def load_anime(anime,ad_source = True):
         ad.update_anime_lib()
     dict_ad = ad.load_json_dict(ad_source)
     anime_data = dict_ad[anime]
-    if anime not in Anime.anime_instances.keys():
+    if anime not in Anime.animes_index.keys():
         Anime.add_anime(anime,load = False,ad_source = False)
-    id_anime = Anime.anime_instances[anime]
+    id_anime = Anime.animes_index[anime]
     for season in anime_data[ad.ad_table["key_seasons_episodes"]].keys():
         dict_season = anime_data[ad.ad_table["key_seasons_episodes"]][season]
         id_anime.add_season(int(season),len(dict_season))
