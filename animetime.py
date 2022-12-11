@@ -3,7 +3,7 @@ import tomli
 
 with open("../animetime/pyproject.toml", mode="rb") as pypr:
     at_version = tomli.load(pypr)["project"]["version"]
-print("AnimeTime python script version : ", at_version)
+print("AnimeTime script version : ", at_version)
 
 
 class Episode():
@@ -123,7 +123,7 @@ class Anime():
         """
         instances = cls.animes_index
         if anime_name not in instances.keys():
-            print(f"{anime_name} has been added !")
+            print(f"{anime_name} has been added")
             return super(Anime, cls).__new__(cls)
         else:
             raise RuntimeError("An Anime instance with the exact same name already exists")
@@ -147,10 +147,10 @@ class Anime():
 
         Args:
             anime_name (str): anime name
-            load (bool, optional): defines if the anime l . Defaults to False.
-            ad_source (bool, optional): _description_. Defaults to False.
+            load (bool, optional): defines if the anime should be loaded from animedata or not. Defaults to False.
+            ad_source (bool, optional): definies if the load file is the official animedata file or a custom one. Defaults to False.
         """
-        # STATUS : BETA
+        # STATUS : OK
         if load:
             if ad_source:
                 load_anime(anime_name,ad_source = True)
@@ -161,45 +161,65 @@ class Anime():
 
 
     def delete_anime(self):
+        """deletes the anime of the Anime index"""
         # STATUS : OK
-        """Supprime un animé"""
         del Anime.animes_index[self.name]
-        print(f"L'animé {self.name} à été supprimé")
+        print(f"{self.name} has been deleted")
 
 
     @classmethod
-    def export_anime_list(cls):
+    def export_anime_list(cls)-> list:
+        """returns a list containing every anime in the Anime index
+
+        Returns:
+            list: contains the animes of the Anime index
+        """
         # STATUS : OK
-        """Retourne une liste contenant les nom des animés chargés"""
         list_anime = []
-        print("Voici les animés ajoutés : ")
         for instance in Anime.animes_index.values():
             list_anime.append(instance.name)
         return list_anime
 
 
-    def add_season(self,season_number,number_of_episodes):
+    def add_season(self,season_number:int,number_of_episodes:int):
+        """adds a season to an anime
+
+        Args:
+            season_number (int): the number of the season to be added
+            number_of_episodes (int): the number of episodes in the season
+        """
         # STATUS : OK
-        """Ajoute une season a un animé"""
         globals()[f"season_{self.local_id}_{season_number}"] = Season(self,season_number,number_of_episodes, init = True)
+        print(f"The season number {season_number} and its episodes have been added")
 
+    def delete_season(self,season_number:int):
+        """deletes a season and its episodes of the season anime index
 
-    def delete_season(self,season_number):
+        Args:
+            season_number (int): number of the season to be deleted
+        """
         # STATUS : OK
-        """Supprime une season d'un animé"""
         del self.seasons_index[season_number]
-        print(f"La season {season_number} de l'anime {self.name} et ses épisodes ont été supprimés")
+        print(f"The season number {season_number} of {self.name} and its episodes have been deleted")
 
 
-    def export_seasons_episodes(self):
+    def export_seasons_episodes(self)-> dict:
+        """exports a dictionnary containing every seasons and episodes of the anime
+
+        Returns:
+            dict: contains seasons and episodes data of the anime
+        """
         # STATUS : OK
-        """Retourne un dictionnaire contenant les seasons et ses épisodes d'un animé"""
         data_seasons = self.export_dict()
         return data_seasons[ad.ad_table["key_seasons_episodes"]]
 
 
-    def export_dict(self):
-        """Exporte toutes les données d'un animé vers un dictionnaire, utilisable par AnimeData après avoir été formaté"""
+    def export_dict(self)->dict:
+        """exports a dictionnary containing all the data of the anime
+
+        Returns:
+            dict: contains anime data
+        """
         #STATUS : OK
         json_seasons = {}
         for season in self.seasons_index.values():
@@ -211,20 +231,29 @@ class Anime():
         return json_dict
 
 
-def format_dict(list_str_anime):
-    """Formate les dictionnaires d'animés afin qu'AnimeData puisse les traiter"""
+def multi_anime_dict(list_anime:list)->dict:
+    """put anime dictionnary together in order to exploit this database
+
+    Args:
+        list_anime (list): list containing the anime to export
+
+    Returns:
+        dict: contains animes data
+    """
     #STATUS : OK
     dict_anime = {}
-    if type(list_str_anime) is list:
-        for anime_to_format in list_str_anime:
-            dict_anime[anime_to_format] = Anime.animes_index[anime_to_format].export_dict()
-    elif type(list_str_anime) is str:
-        dict_anime[list_str_anime] = Anime.animes_index[list_str_anime].export_dict()
+    for anime_to_format in list_anime:
+        dict_anime[anime_to_format] = Anime.animes_index[anime_to_format].export_dict()
     return dict_anime
 
 
-def load_anime(anime,ad_source = True):
-    """Charge un animé"""
+def load_anime(anime:str,ad_source:bool = True):
+    """loads an anime using animedata from a json file
+
+    Args:
+        anime (str): anime name to be loaded
+        ad_source (bool, optional): definies if the load file is the official animedata file or a custom one. Defaults to True.
+    """
     #STATUS : OK
     if ad_source:
         ad.update_anime_lib()
@@ -244,6 +273,6 @@ def load_anime(anime,ad_source = True):
             id_episode.release_date = dict_episode[ad.ad_table["key_episode_release_date"]]
             id_episode.episode_name = dict_episode[ad.ad_table["key_episode_name"]]
     if ad_source:
-        print(f"L'animé {anime} a été chargé depuis le fichier local d'AnimeData")
+        print(f"{anime} has been loaded from AnimeData source file")
     else:
-        print(f"L'animé {anime} a été chargé depuis le fichier personalisé")
+        print(f"{anime} has been loaded from a custom file")
