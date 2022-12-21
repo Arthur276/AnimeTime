@@ -15,7 +15,7 @@ version = "0.1.6"
 authors = [
  {name="swarthur", email=""}
 ]
-description = "Un module pour gérer ses animés facilement"
+description = "A module to manage and track your favourites animes and series"
 readme = "README.md"
 requires-python = ">=3.7"
 license = "MIT"
