@@ -150,8 +150,9 @@ class Anime():
         """
         instances = cls.animes_index
         if anime_name not in instances.keys():
-            print(f"{anime_name} has been added")
-            return super(Anime, cls).__new__(cls)
+            instances[anime_name] = super(Anime, cls).__new__(cls)
+            print(f"{anime_name} has been added !")
+            return instances[anime_name]
         else:
             raise RuntimeError(
                 "An Anime instance with the exact same name already exists")
@@ -278,8 +279,8 @@ def multi_anime_dict(list_anime: list) -> dict:
     # STATUS : OK
     dict_anime = {}
     for anime_to_format in list_anime:
-        dict_anime[anime_to_format] = Anime.animes_index[
-            anime_to_format].export_dict()
+        dict_anime[anime_to_format] \
+             = Anime.animes_index[anime_to_format].export_dict()
     return dict_anime
 
 
