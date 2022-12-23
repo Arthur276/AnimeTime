@@ -74,7 +74,7 @@ class Season():
         if init_episodes:
             self.init_episodes()
         print(f"The season number {season_number} of {anime_object.name} \
-              has been added")
+have been added")
 
     def init_episodes(self):
         """Initialize every episode of the season using number_if_episodes \
@@ -219,9 +219,7 @@ class Anime():
         """
         # STATUS : OK
         globals()[f"season_{self.local_id}_{season_number}"] = \
-            Season(self, season_number, number_of_episodes, init=True)
-        print(f"The season number {season_number} and its episodes \
-              have been added")
+            Season(self, season_number, number_of_episodes, init_episodes=True)
 
     def delete_season(self, season_number: int):
         """Delete a season and its episodes of the season anime index.
