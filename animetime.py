@@ -1,10 +1,10 @@
 """Module that provides tools to manage its anime or tv series."""
 
 import animedata as ad
-import tomli
+import tomllib
 
 with open("../animetime/pyproject.toml", mode="rb") as pypr:
-    at_version = tomli.load(pypr)["project"]["version"]
+    at_version = tomllib.load(pypr)["project"]["version"]
 print("AnimeTime script version : ", at_version)
 
 
@@ -22,7 +22,7 @@ class Episode():
 
     def __init__(self,
                  anime_object: object,
-                 season_object: object,
+                 season_object:object,
                  episode_number: int,
                  episode_name: str):
         """Initialize an Episode instance and add it to its season's index.
@@ -91,7 +91,7 @@ have been added")
     def edit_episode_data(self,
                           episode_number: int,
                           modified_attribute: str,
-                          new_value: any):
+                          new_value):
         """Edit a specific attribute of an episode.
 
         Args:
