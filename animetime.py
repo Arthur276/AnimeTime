@@ -107,17 +107,6 @@ have been added")
         elif modified_attribute == "release_date":
             self.episodes_index[episode_number].release_date = new_value
 
-    def export_episodes(self) -> dict:
-        """Export episodes data of the season.
-
-        Returns:
-            dict: dictionnary containing episodes data of the season
-        """
-        # STATUS : OK
-        episodes_data = self.anime_object.export_dict()
-        return episodes_data[ad.ad_table[
-            "key_seasons_episodes"]][str(self.season_number)]
-
 
 class Anime():
     """A class to create animes.
@@ -231,16 +220,6 @@ class Anime():
         del self.seasons_index[season_number]
         print(f"The season number {season_number} of {self.name} \
               and its episodes have been deleted")
-
-    def export_seasons_episodes(self) -> dict:
-        """Export a dict containing every seasons and episodes of the anime.
-
-        Returns:
-            dict: contains seasons and episodes data of the anime
-        """
-        # STATUS : OK
-        data_seasons = self.export_dict()
-        return data_seasons[ad.ad_table["key_seasons_episodes"]]
 
     def export_dict(self) -> dict:
         """Export a dictionnary containing all the data of the anime.
