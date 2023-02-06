@@ -292,8 +292,8 @@ def load_anime(anime: str, ad_source: bool = True):
     """
     # STATUS : OK
     if ad_source:
-        ad.update_anime_lib()
-    dict_ad = ad.load_json_dict(ad_source)
+        ad.get_ad_lib()
+    dict_ad = ad.get_ad_lib_content(ad_source)
     anime_data = dict_ad[anime]
     if anime not in Anime.animes_index.keys():
         Anime.add_anime(anime, load=False, ad_source=False)
