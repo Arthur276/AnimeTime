@@ -2,6 +2,8 @@
 
 import animedata as ad
 import tomllib
+import warnings
+
 
 with open("../animetime/pyproject.toml", mode="rb") as pypr:
     at_version = tomllib.load(pypr)["project"]["version"]
@@ -294,3 +296,17 @@ def load_anime(anime: str, ad_source: bool = True):
         print(f"{anime} has been loaded from AnimeData source file")
     else:
         print(f"{anime} has been loaded from a custom file")
+
+
+def export_anime(list_anime: list) -> dict:
+    anime_dict = {}
+    for anime_to_export in list_anime:
+        if anime_to_export not in Anime.animes_index.keys():
+            warnings.warn(
+                f"{anime_to_export} is not added to AnimeTime, ingoring it.")
+        else:
+            anime_dict[anime_to_export] = \
+                Anime.animes_index[anime_to_export].export_dict
+            print(f"{anime_to_export} has been exported successfully")
+    return anime_dict
+    
