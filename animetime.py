@@ -2,8 +2,12 @@
 
 import animedata as ad
 import tomllib
+import os.path
 
-with open("../animetime/pyproject.toml", mode="rb") as pypr:
+
+dir_path = os.path.dirname(__file__)
+
+with open(os.path.join(dir_path, "./pyproject.toml"), mode="rb") as pypr:    
     at_version = tomllib.load(pypr)["project"]["version"]
 print("AnimeTime script version : ", at_version)
 
