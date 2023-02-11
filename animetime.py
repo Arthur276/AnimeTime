@@ -250,23 +250,6 @@ class Anime():
         return json_dict
 
 
-def multi_anime_dict(list_anime: list) -> dict:
-    """Put anime dictionnary together in order to exploit this database.
-
-    Args:
-        list_anime (list): list containing the anime to export
-
-    Returns:
-        dict: contains animes data
-    """
-    # STATUS : OK
-    dict_anime = {}
-    for anime_to_format in list_anime:
-        dict_anime[anime_to_format] \
-             = Anime.animes_index[anime_to_format].export_dict()
-    return dict_anime
-
-
 def load_anime(anime: str, ad_source: bool = True):
     """Load an anime using animedata from a json file.
 
@@ -303,6 +286,14 @@ def load_anime(anime: str, ad_source: bool = True):
 
 
 def export_anime(list_anime: list) -> dict:
+    """Merge several anime dict in a dict in order to be used by AnimeData
+
+    Args:
+        list_anime (list): contains the list of animes to export
+
+    Returns:
+        dict: contains the dictionnaries of the animes.
+    """
     anime_dict = {}
     for anime_to_export in list_anime:
         if anime_to_export not in Anime.animes_index.keys():
@@ -310,7 +301,7 @@ def export_anime(list_anime: list) -> dict:
                 f"{anime_to_export} is not added to AnimeTime, ingoring it.")
         else:
             anime_dict[anime_to_export] = \
-                Anime.animes_index[anime_to_export].export_dict
+                Anime.animes_index[anime_to_export].export_dict()
             print(f"{anime_to_export} has been exported successfully")
     return anime_dict
     
