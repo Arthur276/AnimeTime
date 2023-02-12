@@ -312,7 +312,7 @@ def export_anime(list_anime: list) -> dict:
     for anime_to_export in list_anime:
         if anime_to_export not in Anime.animes_index.keys():
             warnings.warn(
-                f"{animes_to_export} is not added to AnimeTime, ingoring it.")
+                f"{anime_to_export} is not added to AnimeTime, ingoring it.")
         else:
             animes_dict[anime_to_export] = \
                 Anime.animes_index[anime_to_export].export_dict()
