@@ -30,22 +30,35 @@ class Episode():
                  anime_object: object,
                  season_object:object,
                  episode_number: int,
-                 episode_name: str):
+                 episode_name: str = None,
+                 episode_duration: int = None,
+                 episode_release_date: list = None):
         """Initialize an Episode instance and add it to its season's index.
 
         Args:
             anime_object (object): anime object related to the episode
             season_object (object): season object related to the episode
             episode_number (int): episode number
-            episode_name (str): episode name
+            episode_name (str): episode name. Defaults to None.
+            episode_duration (int): episode duration in minutes. 
+                Defaults to None
+            episode_release_date (list): episode release date in format
+                [DD,MM,YYYY]. Default to None
         """
         self.anime_object = anime_object
         self.season_object = season_object
-        self.episode_number = episode_number
-        self.episode_duration = 0
-        self.release_date = {}
+        self.number = episode_number
+        self.duration = episode_duration
+        self.release_date = episode_release_date
+        self.name = episode_name
         season_object.episodes_index[episode_number] = self
-        self.episode_name = episode_name
+    
+    def export_episode(self)-> dict:
+        episode_dict = {}
+        episode_dict[ad.ad_table["episode_name"]] = self.name
+        episode_dict[ad.ad_table["episode_duration"]] = self.duration
+        episode_dict[ad.ad_table["episode_release_date"]] = self.release_date
+        return episode_dict
 
 
 class Season():
@@ -62,37 +75,32 @@ class Season():
     def __init__(self,
                  anime_object: object,
                  season_number: int,
-                 number_of_episodes: int,
-                 init_episodes: bool):
+                 number_of_episodes: int = None):
         """Initialize an Season instance and adds itself to its anime's index.
 
         Args:
             anime_object (object): anime object related to the season
             season_number (int): season number
-            number_of_episodes (int): number of episodes in the season
-            init_episodes (bool): defines if init_episodes() is executed.
+            number_of_episodes (int): number of episodes in the season.
+                Defaults to None. If not None then execute self.init_episodes
         """
         self.anime_object = anime_object
         self.number_of_episodes = number_of_episodes
         self.season_number = season_number
         self.episodes_index = {}
         anime_object.seasons_index[season_number] = self
-        if init_episodes:
+        if number_of_episodes != None:
             self.init_episodes()
         print(f"The season number {season_number} of {anime_object.name} \
 have been added")
 
     def init_episodes(self):
-        """Initialize every episode of the season using number_if_episodes \
-            with a formatted name."""
+        """Initialize every episode of the season using number_of_episodes."""
         # STATUS : OK
         for episode in range(1, self.number_of_episodes+1):
             globals()[f"episode_{self.anime_object.local_id}_ \
                       {self.season_number}_{episode}"] \
-                      = Episode(self.anime_object,
-                                self,
-                                episode,
-                                f"Episode {episode}")
+                      = Episode(self.anime_object,self,episode)
 
     def edit_episode_data(self,
                           episode_number: int,
@@ -113,6 +121,17 @@ have been added")
         elif modified_attribute == "release_date":
             self.episodes_index[episode_number].release_date = new_value
 
+    def export_season(self)-> dict:
+        """Export
+
+        Returns:
+            dict: _description_
+        """
+        season_dict = {}
+        for episode in self.episodes_index.keys():
+            season_dict[episode] = \
+                self.episodes_index[episode].export_episode()
+        return season_dict
 
 class Anime():
     """A class to create animes.
@@ -226,6 +245,7 @@ class Anime():
         del self.seasons_index[season_number]
         print(f"The season number {season_number} of {self.name} \
               and its episodes have been deleted")
+        
 
     def export_dict(self) -> dict:
         """Export a dictionnary containing all the data of the anime.
@@ -234,20 +254,14 @@ class Anime():
             dict: contains anime data
         """
         # STATUS : OK
-        json_seasons = {}
-        for season in self.seasons_index.values():
-            json_episodes = {}
-            for episode in season.episodes_index.values():
-                json_episodes[str(episode.episode_number)] = {
-                    ad.ad_table["key_episode_release_date"]:
-                        episode.release_date,
-                    ad.ad_table["key_episode_duration"]: episode.release_date,
-                    ad.ad_table["key_episode_name"]: episode.episode_name}
-            json_seasons[str(season.season_number)] = json_episodes
-        json_dict = {"type": "anime",
-                     ad.ad_table["key_anime_name"]: self.name,
-                     ad.ad_table["key_seasons_episodes"]: json_seasons}
-        return json_dict
+        dict_seasons_episodes = {}
+        for season in self.seasons_index.keys():
+            dict_seasons_episodes[season] = \
+                self.seasons_index[season].export_season()
+        anime_dict = {"type": "anime",
+                     ad.ad_table["anime_name"]: self.name,
+                     ad.ad_table["seasons_episodes"]: dict_seasons_episodes}
+        return anime_dict
 
 
 def load_anime(anime: str, ad_source: bool = True):
@@ -266,19 +280,19 @@ def load_anime(anime: str, ad_source: bool = True):
     if anime not in Anime.animes_index.keys():
         Anime.add_anime(anime, load=False, ad_source=False)
     id_anime = Anime.animes_index[anime]
-    for season in anime_data[ad.ad_table["key_seasons_episodes"]].keys():
-        dict_season = anime_data[ad.ad_table["key_seasons_episodes"]][season]
+    for season in anime_data[ad.ad_table["seasons_episodes"]].keys():
+        dict_season = anime_data[ad.ad_table["seasons_episodes"]][season]
         id_anime.add_season(int(season), len(dict_season))
         id_season = id_anime.seasons_index[int(season)]
         for episode in dict_season.keys():
             id_episode = id_season.episodes_index[int(episode)]
             dict_episode = dict_season[episode]
             id_episode.episode_duration = dict_episode[ad.ad_table[
-                "key_episode_duration"]]
+                "episode_duration"]]
             id_episode.release_date = dict_episode[ad.ad_table[
-                "key_episode_release_date"]]
+                "episode_release_date"]]
             id_episode.episode_name = dict_episode[ad.ad_table[
-                "key_episode_name"]]
+                "episode_name"]]
     if ad_source:
         print(f"{anime} has been loaded from AnimeData source file")
     else:
@@ -294,14 +308,14 @@ def export_anime(list_anime: list) -> dict:
     Returns:
         dict: contains the dictionnaries of the animes.
     """
-    anime_dict = {}
+    animes_dict = {}
     for anime_to_export in list_anime:
         if anime_to_export not in Anime.animes_index.keys():
             warnings.warn(
-                f"{anime_to_export} is not added to AnimeTime, ingoring it.")
+                f"{animes_to_export} is not added to AnimeTime, ingoring it.")
         else:
-            anime_dict[anime_to_export] = \
+            animes_dict[anime_to_export] = \
                 Anime.animes_index[anime_to_export].export_dict()
             print(f"{anime_to_export} has been exported successfully")
-    return anime_dict
+    return animes_dict
     
