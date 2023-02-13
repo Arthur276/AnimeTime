@@ -102,12 +102,22 @@ class Season():
         anime_object.seasons_index[season_number] = self
 
 
-    def add_episode(self,episode_number: int,episode_name: str = None):
+    def add_episode(self,episode_number: int) -> None:
+        """Add an episode to the season
+
+        Args:
+            episode_number (int): number of the episode
+        """
         globals()[f"episode_{self.anime_object.local_id}_ \
-                      {self.season_number}_{episode_number}"] \
-                      = Episode(self.anime_object,self,episode_number,episode_name)
+                      {self.number}_{episode_number}"] \
+                      = Episode(self.anime_object,self,episode_number)
         
-    def delete_episode(self,episode_number: int):
+    def delete_episode(self,episode_number: int) -> None:
+        """Delete an episode
+
+        Args:
+            episode_number (int): number of the episode to delete
+        """
         del self.episodes_index[episode_number]
         print(f"The episode number {episode_number} has been deleted.")
         
@@ -144,15 +154,31 @@ class Season():
         return season_dict
     
     
-    def import_season(self,season_dict: dict):
+    def import_season(self,season_dict: dict) -> None:
+        """Import the episodes of the season from an AnimeData 
+formatted dictionnary.
+Only the content of the season's number dict should be given 
+to this function.
+
+        Args:
+            season_dict (dict): _description_
+        """
         if len(self.episodes_index) >= 0:
             warnings.warn("The season already contains episode, they will be replaced.")
-        self.episodes_index = {}
+        self.clean_episodes()
         for episode in season_dict.keys():
             self.add_episode(episode)
             self.episodes_index[episode].import_episode(season_dict[episode])
+        print(f"The season {self.number} has been successfully imported.")
             
-            
+    
+    def clean_episodes(self) -> None:
+        """Delete all the episodes of the season.
+        """
+        list_episodes = self.episodes_index.keys()
+        for episode_to_delete in list_episodes:
+            del self.episodes_index[episode_to_delete]
+                 
 
 class Anime():
     """A class to create animes.
@@ -229,6 +255,7 @@ class Anime():
     def delete_anime(self):
         """Delete the anime of the Anime index."""
         # STATUS : OK
+        self.clean_seasons()
         del Anime.animes_index[self.name]
         print(f"{self.name} has been deleted")
 
@@ -265,6 +292,7 @@ have been added.")
             season_number (int): number of the season to be deleted
         """
         # STATUS : OK
+        self.seasons_index[season_number].clean_episodes()
         del self.seasons_index[season_number]
         print(f"The season number {season_number} of {self.name} \
               and its episodes have been deleted")
@@ -285,6 +313,11 @@ have been added.")
                      ad.ad_table["anime_name"]: self.name,
                      ad.ad_table["seasons"]: dict_seasons}
         return anime_dict
+
+    def clean_seasons(self) -> None:
+        list_seasons = self.seasons_index.keys()
+        for season_to_delete in list_seasons:
+            self.delete_season(season_to_delete)
 
 
 def load_anime(anime: str, ad_source: bool = True):
