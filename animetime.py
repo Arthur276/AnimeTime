@@ -251,7 +251,7 @@ class Anime():
             list_anime.append(instance.name)
         return list_anime
 
-    def add_season(self, season_number: int, number_of_episodes: int):
+    def add_season(self, season_number: int):
         """Add a season to an anime.
 
         Args:
@@ -260,7 +260,7 @@ class Anime():
         """
         # STATUS : OK
         globals()[f"season_{self.local_id}_{season_number}"] = \
-            Season(self, season_number, number_of_episodes, init_episodes=True)
+            Season(self, season_number)
 
     def delete_season(self, season_number: int):
         """Delete a season and its episodes of the season anime index.
