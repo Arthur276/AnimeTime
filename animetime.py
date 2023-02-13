@@ -32,7 +32,7 @@ class Episode():
                  episode_number: int,
                  episode_name: str = None,
                  episode_duration: int = None,
-                 episode_release_date: list = None):
+                 episode_release_date: list = None) -> None:
         """Initialize an Episode instance and add it to its season's index.
 
         Args:
@@ -65,7 +65,7 @@ class Episode():
         episode_dict[ad.ad_table["episode_release_date"]] = self.release_date
         return episode_dict
     
-    def import_episode(self, episode_dict:dict):
+    def import_episode(self, episode_dict:dict) -> None:
         """Import and replace the data of an episode with the dict data.
 
         Args:
@@ -89,7 +89,7 @@ class Season():
 
     def __init__(self,
                  anime_object: object,
-                 season_number: int):
+                 season_number: int) -> None:
         """Initialize an Season instance and adds itself to its anime's index.
 
         Args:
@@ -97,7 +97,7 @@ class Season():
             season_number (int): season number
         """
         self.anime_object = anime_object
-        self.season_number = season_number
+        self.number = season_number
         self.episodes_index = {}
         anime_object.seasons_index[season_number] = self
 
@@ -125,7 +125,7 @@ class Season():
     def edit_episode_data(self,
                           episode_number: int,
                           modified_attribute: str,
-                          new_value):
+                          new_value) -> None:
         """Edit a specific attribute of an episode.
 
         Args:
@@ -218,7 +218,7 @@ class Anime():
             raise RuntimeError(
                 "An Anime instance with the exact same name already exists")
 
-    def __init__(self, anime_name: str):
+    def __init__(self, anime_name: str) -> None:
         """Initialize an Anime instance and increase by one animes_number.
 
         Args:
@@ -233,7 +233,7 @@ class Anime():
     def add_anime(cls,
                   anime_name: str,
                   load: bool = False,
-                  ad_source: bool = False):
+                  ad_source: bool = False) -> None:
         """Add an anime by creating an Anime instance.
 
         Args:
@@ -252,7 +252,7 @@ class Anime():
         else:
             globals()[f"anime_{Anime.animes_number-1}"] = Anime(anime_name)
 
-    def delete_anime(self):
+    def delete_anime(self) -> None:
         """Delete the anime of the Anime index."""
         # STATUS : OK
         self.clean_seasons()
@@ -271,8 +271,8 @@ class Anime():
         for instance in Anime.animes_index.values():
             list_anime.append(instance.name)
         return list_anime
-
-    def add_season(self, season_number: int):
+    
+    def add_season(self, season_number: int) -> None:
         """Add a season to an anime.
 
         Args:
@@ -285,7 +285,7 @@ class Anime():
         print(f"The season number {season_number} of {self.name} \
 have been added.")
 
-    def delete_season(self, season_number: int):
+    def delete_season(self, season_number: int) -> None:
         """Delete a season and its episodes of the season anime index.
 
         Args:
@@ -297,7 +297,6 @@ have been added.")
         print(f"The season number {season_number} of {self.name} \
               and its episodes have been deleted")
         
-
     def export_dict(self) -> dict:
         """Export a dictionnary containing all the data of the anime.
 
@@ -320,7 +319,7 @@ have been added.")
             self.delete_season(season_to_delete)
 
 
-def load_anime(anime: str, ad_source: bool = True):
+def load_anime(anime: str, ad_source: bool = True) -> None:
     """Load an anime using animedata from a json file.
 
     Args:
@@ -374,4 +373,3 @@ def export_anime(list_anime: list) -> dict:
                 Anime.animes_index[anime_to_export].export_dict()
             print(f"{anime_to_export} has been exported successfully")
     return animes_dict
-    
