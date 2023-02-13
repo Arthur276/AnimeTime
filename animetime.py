@@ -97,7 +97,6 @@ class Season():
             season_number (int): season number
         """
         self.anime_object = anime_object
-        self.number_of_episodes = 0
         self.season_number = season_number
         self.episodes_index = {}
         anime_object.seasons_index[season_number] = self
@@ -107,13 +106,9 @@ class Season():
         globals()[f"episode_{self.anime_object.local_id}_ \
                       {self.season_number}_{episode_number}"] \
                       = Episode(self.anime_object,self,episode_number,episode_name)
-        self.number_of_episodes+=1
-        print(f"The season number {self.season_number} of {self.anime_object.name} \
-have been added.")
         
     def delete_episode(self,episode_number: int):
         del self.episodes_index[episode_number]
-        self.number_of_episodes -= 1
         print(f"The episode number {episode_number} has been deleted.")
         
 
@@ -150,10 +145,9 @@ have been added.")
     
     
     def import_season(self,season_dict: dict):
-        if self.number_of_episodes >= 0:
-            warnings.warn("Season already contains episode, they will be replaced.")
-        for episode_existing in self.episodes_index.keys():
-            self.delete_episode(self.episodes_index[episode_existing])
+        if len(self.episodes_index) >= 0:
+            warnings.warn("The season already contains episode, they will be replaced.")
+        self.episodes_index = {}
         for episode in season_dict.keys():
             self.add_episode(episode)
             self.episodes_index[episode].import_episode(season_dict[episode])
@@ -261,6 +255,8 @@ class Anime():
         # STATUS : OK
         globals()[f"season_{self.local_id}_{season_number}"] = \
             Season(self, season_number)
+        print(f"The season number {season_number} of {self.name} \
+have been added.")
 
     def delete_season(self, season_number: int):
         """Delete a season and its episodes of the season anime index.
