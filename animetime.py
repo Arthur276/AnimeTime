@@ -34,17 +34,18 @@ class Episode():
                  episode_duration: int = None,
                  episode_release_date: list = None) -> None:
         """Initialize an Episode instance and add it to its season's index.
-
+        
         Args:
-            anime_object (object): anime object related to the episode
-            season_object (object): season object related to the episode
-            episode_number (int): episode number
-            episode_name (str): episode name. Defaults to None.
-            episode_duration (int): episode duration in minutes. 
+            anime_object (object): anime object related to the episode.
+            season_object (object): season object related to the episode.
+            episode_number (int): episode number.
+            episode_name (str, optional): episode name. Defaults to None.
+            episode_duration (int, optional): episode duration in minutes. 
                 Defaults to None
             episode_release_date (list): episode release date in format
                 [DD,MM,YYYY]. Default to None
         """
+        instance_exist(episode_number,season_object.episodes_index,True, "presence") 
         self.anime_object = anime_object
         self.season_object = season_object
         self.number = episode_number
@@ -82,7 +83,7 @@ class Season():
     Attributes:
         anime_object (object): anime object related to the season
         number_of_episodes (int): number of episodes in the season
-        season_number (int): season number
+        number (int): season number
         episodes_index (dict): index of every episode instance of the season,
             binding episode number and its object
     """
@@ -90,19 +91,20 @@ class Season():
     def __init__(self,
                  anime_object: object,
                  season_number: int) -> None:
-        """Initialize an Season instance and adds itself to its anime's index.
+        """Initialize an Season instance and add itself to its anime's index.
 
         Args:
             anime_object (object): anime object related to the season
             season_number (int): season number
         """
+        instance_exist(season_number, anime_object.seasons_index, True, "presence")
         self.anime_object = anime_object
         self.number = season_number
         self.episodes_index = {}
         anime_object.seasons_index[season_number] = self
 
 
-    def add_episode(self,episode_number: int) -> None:
+    def add_episode(self, episode_number: int) -> None:
         """Add an episode to the season
 
         Args:
@@ -111,15 +113,14 @@ class Season():
         globals()[f"episode_{self.anime_object.local_id}_ \
                       {self.number}_{episode_number}"] \
                       = Episode(self.anime_object,self,episode_number)
-        
-    def delete_episode(self,episode_number: int) -> None:
+
+    def delete_episodes(self, episodes_list: list = None) -> None:
         """Delete an episode
 
         Args:
-            episode_number (int): number of the episode to delete
+            episodes_list (int): list of the episodes to delete
         """
-        del self.episodes_index[episode_number]
-        print(f"The episode number {episode_number} has been deleted.")
+        delete_instance(self.episodes_index, episodes_list)
         
 
     def edit_episode_data(self,
@@ -133,7 +134,6 @@ class Season():
             modified_attribute (str): attribute to be modified
             new_value (any): new value of the modified attribute
         """
-        # STATUS : OK
         if modified_attribute == "episode_name":
             self.episodes_index[episode_number].episode_name = new_value
         elif modified_attribute == "episode_duration":
@@ -142,10 +142,10 @@ class Season():
             self.episodes_index[episode_number].release_date = new_value
 
     def export_season(self)-> dict:
-        """Export
+        """Export a season and its data.
 
         Returns:
-            dict: _description_
+            dict: episode's data
         """
         season_dict = {}
         for episode in self.episodes_index.keys():
@@ -165,20 +165,11 @@ to this function.
         """
         if len(self.episodes_index) >= 0:
             warnings.warn("The season already contains episode, they will be replaced.")
-        self.clean_episodes()
+        self.delete_episodes()
         for episode in season_dict.keys():
             self.add_episode(episode)
             self.episodes_index[episode].import_episode(season_dict[episode])
         print(f"The season {self.number} has been successfully imported.")
-            
-    
-    def clean_episodes(self) -> None:
-        """Delete all the episodes of the season.
-        """
-        list_episodes = self.episodes_index.keys()
-        for episode_to_delete in list_episodes:
-            del self.episodes_index[episode_to_delete]
-                 
 
 class Anime():
     """A class to create animes.
@@ -186,78 +177,48 @@ class Anime():
     Attributes:
         animes_index (dict, class attribute): index of every Anime instance
             binding anime name and its object
-        animes_number (int, class attribute): number of animes instanced,
+        animes_id_counter (int, class attribute):animes indentifiers counter,
             used to create unique anime instances
         name(str) : anime name
         seasons_index (dict) : index of every Season instance of the anime,
             binding season number and its object
-        local_id (int): anime number, only depending of animes_number when
+        local_id (int): anime identifier, only depending of animes_id_counter when
             instanced and only used for instance name
     """
 
     animes_index = {}
-    animes_number = 0
+    animes_id_counter = 0
 
-    def __new__(cls, anime_name: str):
-        """Check if an Anime instance already has the same name as anime_name.
+    def __init__(self, anime_name: str):
+        """Initialize an Anime instance and increase by one animes_id_counter.
 
         Args:
             anime_name (str): anime name
-
-        Raises:
-            RuntimeError: if an Anime instance has the exact same name
-                as anime_name
-
         """
-        instances = cls.animes_index
-        if anime_name not in instances.keys():
-            instances[anime_name] = super(Anime, cls).__new__(cls)
-            print(f"{anime_name} has been added !")
-            return instances[anime_name]
-        else:
-            raise RuntimeError(
-                "An Anime instance with the exact same name already exists")
-
-    def __init__(self, anime_name: str) -> None:
-        """Initialize an Anime instance and increase by one animes_number.
-
-        Args:
-            anime_name (str): anime_name
-        """
+        instance_exist(anime_name,Anime.animes_index,True,"presence")
         self.name = anime_name
         self.seasons_index = {}
-        self.local_id = Anime.animes_number
-        Anime.animes_number += 1
+        self.local_id = Anime.animes_id_counter
+        Anime.animes_index[anime_name] = self
+        Anime.animes_id_counter += 1
 
     @classmethod
-    def add_anime(cls,
-                  anime_name: str,
-                  load: bool = False,
-                  ad_source: bool = False) -> None:
+    def add_anime(cls,anime_name: str) -> None:
         """Add an anime by creating an Anime instance.
 
         Args:
             anime_name (str): anime name
-            load (bool, optional): defines if the anime should be loaded from
-                animedata or not. Defaults to False.
-            ad_source (bool, optional): definies if the load file is
-                the animedata file or a custom one. Defaults to False.
         """
-        # STATUS : OK
-        if load:
-            if ad_source:
-                load_anime(anime_name, ad_source=True)
-            else:
-                load_anime(anime_name, ad_source=False)
-        else:
-            globals()[f"anime_{Anime.animes_number-1}"] = Anime(anime_name)
+        globals()[f"anime_{Anime.animes_id_counter-1}"] = Anime(anime_name)
+        print(f"{anime_name} has been added.")
 
-    def delete_anime(self) -> None:
-        """Delete the anime of the Anime index."""
-        # STATUS : OK
-        self.clean_seasons()
-        del Anime.animes_index[self.name]
-        print(f"{self.name} has been deleted")
+    @classmethod
+    def delete_animes(cls, animes_list: list = None):
+        """Delete the selected animes.
+        
+        Args -> None:
+            animes_list (list, optional): list of animes to delete."""
+        delete_instance(cls.animes_index, animes_list)
 
     @classmethod
     def export_anime_list(cls) -> list:
@@ -265,111 +226,155 @@ class Anime():
 
         Returns:
             list: contains the animes of the Anime index
-        """
-        # STATUS : OK
-        list_anime = []
-        for instance in Anime.animes_index.values():
-            list_anime.append(instance.name)
-        return list_anime
+        """  
+        return list(cls.animes_index.keys())
     
     def add_season(self, season_number: int) -> None:
         """Add a season to an anime.
 
         Args:
-            season_number (int): the number of the season to be added
-            number_of_episodes (int): the number of episodes in the season
+            season_number (int): the number of the season to be added.
         """
-        # STATUS : OK
         globals()[f"season_{self.local_id}_{season_number}"] = \
             Season(self, season_number)
         print(f"The season number {season_number} of {self.name} \
 have been added.")
 
-    def delete_season(self, season_number: int) -> None:
+    def delete_seasons(self, seasons_list: list = None) -> None:
         """Delete a season and its episodes of the season anime index.
 
         Args:
-            season_number (int): number of the season to be deleted
+            seasons_list (list): list of the season to be deleted
         """
-        # STATUS : OK
-        self.seasons_index[season_number].clean_episodes()
-        del self.seasons_index[season_number]
-        print(f"The season number {season_number} of {self.name} \
-              and its episodes have been deleted")
+        delete_instance(self.seasons_index, seasons_list)
         
-    def export_dict(self) -> dict:
+
+    def export_anime(self) -> dict:
         """Export a dictionnary containing all the data of the anime.
 
         Returns:
             dict: contains anime data
         """
-        # STATUS : OK
         dict_seasons = {}
         for season in self.seasons_index.keys():
-            dict_seasons[season] = \
-                self.seasons_index[season].export_season()
+            dict_seasons[season] = self.seasons_index[season].export_season()
         anime_dict = {"type": "anime",
                      ad.ad_table["anime_name"]: self.name,
                      ad.ad_table["seasons"]: dict_seasons}
-        return anime_dict
+        return anime_dict                
+                            
+    def import_anime(self,anime_dict: dict):
+        """Import anime's data from a dict.
 
-    def clean_seasons(self) -> None:
-        list_seasons = self.seasons_index.keys()
-        for season_to_delete in list_seasons:
-            self.delete_season(season_to_delete)
-
-
-def load_anime(anime: str, ad_source: bool = True) -> None:
+        Args:
+            anime_dict (dict): dict containing anime's data.
+        """
+        if len(self.seasons_index) > 0:
+            warnings.warn("The anime already contains seasons, they will be replaced.")
+        self.clean_seasons()
+        for season in anime_dict[ad.ad_table["seasons"]].keys():
+            self.add_season(season)
+            self.seasons_index[season].import_season(\
+                anime_dict[ad.ad_table["seasons"]][season])
+        print(f"The anime {self.name} has been successfully imported.")
+        
+def import_database(animes_list: list = None, ad_online: bool = True) -> None:
     """Load an anime using animedata from a json file.
 
     Args:
-        anime (str): anime name to be loaded
-        ad_source (bool, optional): defines if the load file :
+        animes_list (str): animes to load
+        ad_online (bool, optional): defines if the load file :
             the animedata file or a custom one. Defaults to True.
     """
-    # STATUS : OK
-    if ad_source:
+    if ad_online:
         ad.get_ad_lib()
-    dict_ad = ad.get_ad_lib_content(ad_source)
-    anime_data = dict_ad[anime]
-    if anime not in Anime.animes_index.keys():
-        Anime.add_anime(anime, load=False, ad_source=False)
-    id_anime = Anime.animes_index[anime]
-    for season in anime_data[ad.ad_table["seasons"]].keys():
-        dict_season = anime_data[ad.ad_table["seasons"]][season]
-        id_anime.add_season(int(season), len(dict_season))
-        id_season = id_anime.seasons_index[int(season)]
-        for episode in dict_season.keys():
-            id_episode = id_season.episodes_index[int(episode)]
-            dict_episode = dict_season[episode]
-            id_episode.episode_duration = dict_episode[ad.ad_table[
-                "episode_duration"]]
-            id_episode.release_date = dict_episode[ad.ad_table[
-                "episode_release_date"]]
-            id_episode.episode_name = dict_episode[ad.ad_table[
-                "episode_name"]]
-    if ad_source:
-        print(f"{anime} has been loaded from AnimeData source file")
-    else:
-        print(f"{anime} has been loaded from a custom file")
+    dict_ad = ad.get_ad_lib_content(ad_online)
+    animes_list = select_all_instances(Anime.animes_index, animes_list)
+    for element in dict_ad.values():
+        if element["type"] == "anime":
+            anime_name = element[ad.ad_table["anime_name"]]
+            if anime_name in animes_list:
+                Anime.add_anime(anime_name)
+                Anime.animes_index[anime_name].import_anime(element)
+    print("Importation successful")
 
 
-def export_anime(list_anime: list) -> dict:
+def export_database(animes_list: list = None) -> dict:
     """Merge several anime dict in a dict in order to be used by AnimeData
 
     Args:
-        list_anime (list): contains the list of animes to export
+        animes_list (list, optional): contains the list of animes to export.
+        Default to None.
 
     Returns:
         dict: contains the dictionnaries of the animes.
     """
-    animes_dict = {}
-    for anime_to_export in list_anime:
-        if anime_to_export not in Anime.animes_index.keys():
-            warnings.warn(
-                f"{anime_to_export} is not added to AnimeTime, ingoring it.")
+    ad_dict = {}
+    animes_list = select_all_instances(Anime.animes_index, animes_list)
+    animes_ignored = []
+    for anime_to_export in animes_list:
+        if instance_exist(anime_to_export, Anime.animes_index, True, "missing"):
+            animes_ignored.append(anime_to_export)
         else:
-            animes_dict[anime_to_export] = \
-                Anime.animes_index[anime_to_export].export_dict()
-            print(f"{anime_to_export} has been exported successfully")
-    return animes_dict
+            ad_dict[anime_to_export] = \
+                Anime.animes_index[anime_to_export].export_anime()
+    print("Exportation successful")
+    print("Animes ignored :", animes_ignored)
+    return ad_dict
+    
+def instance_exist(instance_name_id, 
+                   instances_index: dict, 
+                   warn_user: bool, 
+                   warn_mode: str) -> bool:
+    """Check if an instance identified by a name or a number in a class index.
+
+    Args:
+        instance_name_id (Any): instance's identifier
+        instances_index (dict): class index
+        warn_user (bool): send a warning to the user.
+        warn_mode (str): warn either when the anime is missing or if it\
+            exists : "missing" or "presence" respectively.
+
+    Returns:
+        bool: if the instance exists or not.
+    """
+    if instance_name_id in instances_index.keys():
+        if warn_user and warn_mode == "presence":
+            warnings.warn("An instance with the same identifier already exists,\
+ignoring it.")
+        return True
+    else:
+        if warn_user and warn_mode == "missing":
+            warnings.warn("Not any instance with this identifier exists in \
+AnimeTime database, ignoring it.")
+        return False
+
+def delete_instance(instances_index: dict, instances_list: list = None):
+    """Delete instances from their identifier and the linked index.
+
+    Args:
+        instances_index (dict): index related to the instances.
+        instances_list (list, optional): list of the instances to delete. Defaults to None.
+    """
+    instances_list = select_all_instances(instances_index, instances_list)
+    for instance_to_delete in instances_list:
+        if instance_exist(instance_to_delete, instances_index, True, "missing"):
+            if isinstance(instance_to_delete,(Anime,Season)):
+                delete_instance(instances_index[instance_to_delete])
+            del instances_index[instance_to_delete]
+    print("Deletion complete.")
+        
+def select_all_instances(instances_index: dict, instances_list : list = None)-> list:
+    """Return all the instances of their index if the initial instances_list
+    is equal to None. Otherwise the initial list is return as it is.
+
+    Args:
+        instances_index (dict): index of the instances
+        instances_list (list, optional): list of the instances. Defaults to None.
+
+    Returns:
+        list: instances list
+    """
+    if instances_list == None:
+        instances_list = list(instances_index.keys())
+    return instances_list
