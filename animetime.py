@@ -163,14 +163,13 @@ class Season():
         Args:
             season_dict (dict): _description_
         """
-        if len(self.episodes_index) >= 0:
+        if len(self.episodes_index) > 0:
             warnings.warn("The season already contains episode, \
-                they will be replaced.")
-        self.delete_episodes()
+they will be replaced.")
+            self.delete_episodes()
         for episode in season_dict.keys():
             self.add_episode(episode)
             self.episodes_index[episode].import_episode(season_dict[episode])
-        print(f"The season {self.number} has been successfully imported.")
 
 
 class Anime():
@@ -242,7 +241,7 @@ class Anime():
         globals()[f"season_{self.local_id}_{season_number}"] = \
             Season(self, season_number)
         print(f"The season number {season_number} of {self.name} \
-have been added.")
+has been added.")
 
     def delete_seasons(self, seasons_list: list = None) -> None:
         """Delete a season and its episodes of the season anime index.
@@ -274,35 +273,35 @@ have been added.")
         """
         if len(self.seasons_index) > 0:
             warnings.warn("The anime already contains seasons,\
-                they will be replaced.")
-        self.clean_seasons()
+they will be replaced.")
+            self.delete_seasons()
         for season in anime_dict[ad.ad_table["seasons"]].keys():
             self.add_season(season)
             self.seasons_index[season].import_season(
                 anime_dict[ad.ad_table["seasons"]][season])
-        print(f"The anime {self.name} has been successfully imported.")
 
 
 def import_database(animes_list: list = None, ad_online: bool = True) -> None:
-    """Load an anime using animedata from a json file.
+    """Import one or several animes from AnimeData.
 
     Args:
-        animes_list (str): animes to load
-        ad_online (bool, optional): defines if the load file :
-            the animedata file or a custom one. Defaults to True.
+        animes_list (list, optional): List of animes to load. Defaults to None.
+        ad_online (bool, optional): _description_. Defaults to True.
     """
     if ad_online:
         ad.get_ad_lib()
     dict_ad = ad.get_ad_lib_content(ad_online)
-    animes_list = select_all_instances(Anime.animes_index, animes_list)
+    if animes_list == None:
+        animes_list = []
     for element in dict_ad.values():
         if element["type"] == "anime":
             anime_name = element[ad.ad_table["anime_name"]]
-            if anime_name in animes_list:
-                Anime.add_anime(anime_name)
+            if anime_name in animes_list or len(animes_list)==0:
+                if instance_exist(anime_name, Anime.animes_index, True, "presence"):
+                    Anime.animes_index[anime_name].delete_seasons()
+                else:
+                    Anime.add_anime(anime_name)
                 Anime.animes_index[anime_name].import_anime(element)
-    print("Importation successful")
-
 
 def export_database(animes_list: list = None) -> dict:
     """Merge several anime dict in a dict in order to be used by AnimeData.
@@ -318,7 +317,7 @@ def export_database(animes_list: list = None) -> dict:
     animes_list = select_all_instances(Anime.animes_index, animes_list)
     animes_ignored = []
     for anime_to_export in animes_list:
-        if instance_exist(anime_to_export,
+        if not instance_exist(anime_to_export,
                           Anime.animes_index,
                           True,
                           "missing"):
@@ -326,8 +325,6 @@ def export_database(animes_list: list = None) -> dict:
         else:
             ad_dict[anime_to_export] = \
                 Anime.animes_index[anime_to_export].export_anime()
-    print("Exportation successful")
-    print("Animes ignored :", animes_ignored)
     return ad_dict
 
 
@@ -349,7 +346,7 @@ def instance_exist(instance_name_id,
     """
     if instance_name_id in instances_index.keys():
         if warn_user and warn_mode == "presence":
-            warnings.warn("An instance with the same id already exist,\
+            warnings.warn("An instance with the same id already exist, \
 ignoring it.")
         return True
     else:
@@ -376,7 +373,6 @@ def delete_instance(instances_index: dict, instances_list: list = None) -> None:
             if isinstance(instance_to_delete, (Anime, Season)):
                 delete_instance(instances_index[instance_to_delete])
             del instances_index[instance_to_delete]
-    print("Deletion complete.")
 
 
 def select_all_instances(instances_index: dict,
@@ -392,5 +388,5 @@ def select_all_instances(instances_index: dict,
         list: instances list
     """
     if instances_list is None:
-        instances_list = list(instances_index.keys())
+        return list(instances_index.keys())
     return instances_list
