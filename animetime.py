@@ -108,6 +108,9 @@ class Season():
         self.number = season_number
         self.episodes_index = {}
         anime_object.seasons_index[season_number] = self
+        
+    def __del__(self):
+        delete_instance(self.episodes_index)
 
     def add_episode(self, episode_number: int) -> None:
         """Add an episode to the season.
@@ -203,6 +206,9 @@ class Anime():
         Anime.animes_index[anime_name] = self
         Anime.animes_id_counter += 1
 
+    def __del__(self):
+        delete_instance(self.seasons_index)
+    
     @classmethod
     def add_anime(cls, anime_name: str) -> None:
         """Add an anime by creating an Anime instance.
@@ -370,8 +376,6 @@ def delete_instance(instances_index: dict, instances_list: list = None) -> None:
                           instances_index,
                           True,
                           "missing"):
-            if isinstance(instance_to_delete, (Anime, Season)):
-                delete_instance(instances_index[instance_to_delete])
             del instances_index[instance_to_delete]
 
 
