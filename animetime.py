@@ -217,7 +217,6 @@ class Anime():
             anime_name (str): anime name
         """
         globals()[f"anime_{Anime.animes_id_counter-1}"] = Anime(anime_name)
-        print(f"{anime_name} has been added.")
 
     @classmethod
     def delete_animes(cls, animes_list: list = None) -> None:
@@ -246,8 +245,6 @@ class Anime():
         """
         globals()[f"season_{self.local_id}_{season_number}"] = \
             Season(self, season_number)
-        print(f"The season number {season_number} of {self.name} \
-has been added.")
 
     def delete_seasons(self, seasons_list: list = None) -> None:
         """Delete a season and its episodes of the season anime index.
