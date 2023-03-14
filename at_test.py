@@ -28,7 +28,7 @@ def test_add_anime():
         season_object.episodes_index[episode].name = f"Episode {episode}"
     random_test = randint(1,29)
     if season_object.episodes_index[random_test].name != f"Episode {random_test}":
-        warnings.warn("FAILED: Additon process")
+        warnings.warn("FAILED: Addition process")
     else:
         print("ADDITION : OK")
 
