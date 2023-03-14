@@ -39,6 +39,7 @@ def test_delete_anime():
     else:
         print("DELETION : OK")
     
-test_import_export()
-test_add_anime()
-test_delete_anime()
+def test_all():
+    test_import_export()
+    test_add_anime()
+    test_delete_anime()
