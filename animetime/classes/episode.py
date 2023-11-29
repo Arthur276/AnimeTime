@@ -19,7 +19,7 @@ class Episode():
                  episode_number: int,
                  episode_name: str = None,
                  episode_duration: int = None,
-                 episode_release_date: list = None) -> None:
+                 episode_release_date: tuple = None) -> None:
         """Initialize an Episode instance and add it to its season's index.
 
         Args:
@@ -30,7 +30,7 @@ class Episode():
             episode_duration (int, optional): episode duration in minutes.
                 Defaults to None
             episode_release_date (list): episode release date in format
-                [DD,MM,YYYY]. Default to None
+                (DD,MM,YYYY). Default to None
         """
         instance_exist(episode_number,
                        season_object.episodes_index,

@@ -31,8 +31,6 @@ class Season():
         self.episodes_index = {}
         anime_object.seasons_index[season_number] = self
         
-    def __del__(self):
-        delete_instance(self.episodes_index)
 
     def add_episode(self, episode_number: int) -> None:
         """Add an episode to the season.
@@ -40,9 +38,7 @@ class Season():
         Args:
             episode_number (int): number of the episode
         """
-        globals()[f"episode_{self.anime_object.local_id}_ \
-            {self.number}_{episode_number}"] = \
-            Episode(self.anime_object, self, episode_number)
+        Episode(self.anime_object, self, episode_number)
 
     def delete_episodes(self, episodes_list: list = None) -> None:
         """Delete an episode.

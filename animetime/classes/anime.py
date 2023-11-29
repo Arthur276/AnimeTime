@@ -9,8 +9,6 @@ class Anime():
     Attributes:
         animes_index (dict, class attribute): index of every Anime instance
             binding anime name and its object
-        animes_id_counter (int, class attribute):animes indentifiers counter,
-            used to create unique anime instances
         name(str) : anime name
         seasons_index (dict) : index of every Season instance of the anime,
             binding season number and its object
@@ -19,7 +17,6 @@ class Anime():
     """
 
     animes_index = {}
-    animes_id_counter = 0
 
     def __init__(self, anime_name: str) -> None:
         """Initialize an Anime instance and increase by one animes_id_counter.
@@ -27,16 +24,11 @@ class Anime():
         Args:
             anime_name (str): anime name
         """
-        instance_exist(anime_name, Anime.animes_index, True, "presence")
-        self.name = anime_name
-        self.seasons_index = {}
-        self.local_id = Anime.animes_id_counter
-        Anime.animes_index[anime_name] = self
-        Anime.animes_id_counter += 1
+        if not instance_exist(anime_name, Anime.animes_index, True, "presence"):
+            self.name = anime_name
+            self.seasons_index = {}
+            Anime.animes_index[anime_name] = self
 
-    def __del__(self):
-        delete_instance(self.seasons_index)
-    
     @classmethod
     def add_anime(cls, anime_name: str) -> None:
         """Add an anime by creating an Anime instance.
@@ -44,7 +36,7 @@ class Anime():
         Args:
             anime_name (str): anime name
         """
-        globals()[f"anime_{Anime.animes_id_counter-1}"] = Anime(anime_name)
+        Anime(anime_name)
 
     @classmethod
     def delete_animes(cls, animes_list: list = None) -> None:
@@ -71,8 +63,7 @@ class Anime():
         Args:
             season_number (int): the number of the season to be added.
         """
-        globals()[f"season_{self.local_id}_{season_number}"] = \
-            Season(self, season_number)
+        Season(self, season_number)
 
     def delete_seasons(self, seasons_list: list = None) -> None:
         """Delete a season and its episodes of the season anime index.
@@ -92,8 +83,8 @@ class Anime():
         for season in self.seasons_index.keys():
             dict_seasons[season] = self.seasons_index[season].export_season()
         anime_dict = {"type": "anime",
-                      admeta.ad_table["anime_name"]: self.name,
-                      admeta.ad_table["seasons"]: dict_seasons}
+                      admeta["anime_name"]: self.name,
+                      admeta["seasons"]: dict_seasons}
         return anime_dict
 
     def import_anime(self, anime_dict: dict) -> None:
@@ -106,7 +97,7 @@ class Anime():
             warnings.warn("The anime already contains seasons,\
 they will be replaced.")
             self.delete_seasons()
-        for season in anime_dict[admeta.ad_table["seasons"]].keys():
+        for season in anime_dict[admeta["seasons"]].keys():
             self.add_season(season)
             self.seasons_index[season].import_season(
-                anime_dict[admeta.ad_table["seasons"]][season])
+                anime_dict[admeta["seasons"]][season])
