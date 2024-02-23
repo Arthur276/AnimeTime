@@ -2,3 +2,5 @@
 *.gz
 *.whl
 *.pyc
+__pycache__/
+.vscode/
